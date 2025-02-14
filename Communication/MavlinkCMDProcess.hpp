@@ -4,7 +4,8 @@
 
 #define CAMERA_FEEDBACK_QUEUE_ID 60000
 #define MAX_CMD_QUEUE 20
-struct message_queue_struct{
+struct message_queue_struct
+{
 	uint16_t componentID;
 	QueueHandle_t message_queue;
 };
@@ -38,7 +39,7 @@ bool TaskQueueRegister(uint16_t queueID, uint16_t message_queue_size);
 */
 bool SendCmdMsgToTask(CmdMsg msg, uint16_t queueID, double TIMEOUT);
 // 发送消息到首个数字相机的消息队列
-bool SendCmdMsgToSingleCamera( CmdMsg msg, double TIMEOUT );
+bool SendCmdMsgToSingleCamera(CmdMsg msg, double TIMEOUT);
 
 /* 从指定queueID消息队列获取消息
 	msg: 返回的消息
@@ -48,13 +49,11 @@ bool SendCmdMsgToSingleCamera( CmdMsg msg, double TIMEOUT );
 		true: 接收到消息
 		false: 无接收到消息
 */
-bool ReceiveCmdMsgFromTask(CmdMsg* msg, uint16_t queueID, double TIMEOUT);
+bool ReceiveCmdMsgFromTask(CmdMsg *msg, uint16_t queueID, double TIMEOUT);
 
-
-//发送版本信息
-void send_AutoPilot_Version( uint8_t port_index );
-//Mavlink命令处理函数表
-extern void (*const Mavlink_CMD_Process[])( uint8_t port_index , const mavlink_message_t* msg_rd );
-//Mavlink命令处理函数个数
+// 发送版本信息
+void send_AutoPilot_Version(uint8_t port_index);
+// Mavlink命令处理函数表
+extern void (*const Mavlink_CMD_Process[])(uint8_t port_index, const mavlink_message_t *msg_rd);
+// Mavlink命令处理函数个数
 extern const uint16_t Mavlink_CMD_Process_Count;
-

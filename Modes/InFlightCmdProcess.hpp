@@ -13,13 +13,12 @@
 		true：成功
 		false：失败
 */
-bool Process_InflightCmd( uint16_t cmd, double params[] );
-
+bool Process_InflightCmd(uint16_t cmd, double params[]);
 
 /*拍照*/
-	//控制相机拍照
-	void InflightCmd_CamTakePhoto();
+// 控制相机拍照
+void InflightCmd_CamTakePhoto();
 
-	//定距拍照距离
-	extern float CamTriggDist;
+// 定距拍照距离
+extern float CamTriggDist;
 /*拍照*/

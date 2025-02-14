@@ -4,28 +4,27 @@
 #include "mavlink.h"
 #include "vector3.hpp"
 
-//Nav命令信息
+// Nav命令信息
 struct NavCmdInf
 {
-	//计数器
+	// 计数器
 	uint32_t counter1;
 	uint32_t counter2;
-	
-	//临时变量
+
+	// 临时变量
 	double temp[8];
-	
-	//用户临时变量（NavCmd不会修改）
+
+	// 用户临时变量（NavCmd不会修改）
 	double usr_temp[8];
 };
-//首次执行NavCmd命令前需要初始化NavCmdInf
-inline void init_NavCmdInf( NavCmdInf* inf )
+// 首次执行NavCmd命令前需要初始化NavCmdInf
+inline void init_NavCmdInf(NavCmdInf *inf)
 {
-	memset( inf, 0, sizeof(NavCmdInf) );
+	memset(inf, 0, sizeof(NavCmdInf));
 }
 
-//默认frame
+// 默认frame
 #define default_NavCmd_frame MAV_FRAME_GLOBAL
-
 
 /*NavCmd16_WAYPOINT
 	MAV_CMD_NAV_WAYPOINT
@@ -44,10 +43,10 @@ inline void init_NavCmdInf( NavCmdInf* inf )
 		OC: 从当前点到目标点向量
 		pC: 目标点Local坐标
 */
-bool NavCmd16_WAYPOINT_GetInfo( uint8_t frame, double params[], vector3<double>* pO, vector3<double>* OC, vector3<double>* pC );
+bool NavCmd16_WAYPOINT_GetInfo(uint8_t frame, double params[], vector3<double> *pO, vector3<double> *OC, vector3<double> *pC);
 
-//检验指令是否可执行
-bool check_NavCmd( uint16_t cmd, double freq, uint8_t frame, double params[] );
+// 检验指令是否可执行
+bool check_NavCmd(uint16_t cmd, double freq, uint8_t frame, double params[]);
 /*
 	Nav飞行控制指令处理
 	所有指令必须在水平位置控制器打开的前提下执行
@@ -64,13 +63,13 @@ bool check_NavCmd( uint16_t cmd, double freq, uint8_t frame, double params[] );
 		-1：完成
 		>=0：完成且要求切换到指定Mission
 */
-int32_t Process_NavCmd( uint16_t cmd, double freq, uint8_t frame, double params[], NavCmdInf* inf );
+int32_t Process_NavCmd(uint16_t cmd, double freq, uint8_t frame, double params[], NavCmdInf *inf);
 
-#define NavCmdRs_SuccessOrFault(x) (x!=-2 && x!=-3)
-#define NavCmdRs_Success(x) (x==-1 || x>=0)
-#define NavCmdRs_Fault(x) (x<-3)
-#define NavCmdRs_InProgress_CanExInFlightCmd(x) (x==-3)
-#define NavCmdRs_InProgress_CanNotExInFlightCmd(x) (x==-2)
+#define NavCmdRs_SuccessOrFault(x) (x != -2 && x != -3)
+#define NavCmdRs_Success(x) (x == -1 || x >= 0)
+#define NavCmdRs_Fault(x) (x < -3)
+#define NavCmdRs_InProgress_CanExInFlightCmd(x) (x == -3)
+#define NavCmdRs_InProgress_CanNotExInFlightCmd(x) (x == -2)
 
 /*frame定义：
 	<entry value="0" name="MAV_FRAME_GLOBAL">
@@ -148,7 +147,6 @@ int32_t Process_NavCmd( uint16_t cmd, double freq, uint8_t frame, double params[
 		<description>Forward, Left, Up coordinate frame. This is a local frame with Z-up and arbitrary F/L alignment (i.e. not aligned with ENU/earth frame).</description>
 	</entry>
 */
-
 
 /*NavCmd16_WAYPOINT
 	MAV_CMD_NAV_WAYPOINT
