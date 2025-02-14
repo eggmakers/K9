@@ -28,18 +28,18 @@ struct GpsConfig
 
 enum GPS_Scan_Operation
 {
-	//ÔÚÖ¸¶¨²¨ÌØÂÊÏÂ·¢ËÍ³õÊ¼»¯ÐÅÏ¢
+	//ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Í³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ï¢
 	GPS_Scan_Baud9600 = 9600 ,
 	GPS_Scan_Baud38400 = 38400 ,
 	GPS_Scan_Baud460800 = 460800 ,
 	GPS_Scan_Baud115200 = 115200 ,
 	GPS_Scan_Baud57600 = 57600 ,
 	
-	//¼ì²éÊÇ·ñÉèÖÃ³É¹¦
+	//ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ã³É¹ï¿½
 	GPS_Check_Baud ,
-	//ÔÚµ±Ç°²¨ÌØÂÊÏÂÔÙ´Î·¢ËÍÅäÖÃ
+	//ï¿½Úµï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù´Î·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	GPS_ResendConfig ,
-	//GPSÒÑ¼ì²â´æÔÚ
+	//GPSï¿½Ñ¼ï¿½ï¿½ï¿½ï¿½ï¿½
 	GPS_Present ,
 };
 
@@ -83,7 +83,7 @@ static inline uint16_t GPS_ParseByte( GPS_State_Machine* state_machine, uint8_t*
 	frame_datas[ state_machine->frame_datas_ind++ ] = r_data;
 	switch( state_machine->read_state )
 	{
-		case 0:	//ÕÒ°üÍ·
+		case 0:	//ï¿½Ò°ï¿½Í·
 		{				
 			if( state_machine->frame_datas_ind == 1 )
 			{
@@ -113,7 +113,7 @@ static inline uint16_t GPS_ParseByte( GPS_State_Machine* state_machine, uint8_t*
 			}	
 			break;
 		}
-		case 1:	//¶ÁClass IDºÍ°ü³¤¶È
+		case 1:	//ï¿½ï¿½Class IDï¿½Í°ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			if( state_machine->frameType == 0xB5 && state_machine->frame_datas_ind == 8 )
 			{
@@ -135,7 +135,7 @@ static inline uint16_t GPS_ParseByte( GPS_State_Machine* state_machine, uint8_t*
 			}
 			break;
 		}
-		case 2:	//¶Á°üÄÚÈÝ
+		case 2:	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			if(state_machine->frameType == 0xB5)
 			{
@@ -155,7 +155,7 @@ static inline uint16_t GPS_ParseByte( GPS_State_Machine* state_machine, uint8_t*
 			}
 			break;
 		}
-		case 3://Ð£Ñé
+		case 3://Ð£ï¿½ï¿½
 		{
 			if( state_machine->frame_datas_ind == state_machine->frame_datas_length)
 			{
@@ -206,85 +206,85 @@ static bool send_init_msg(DriverInfo& driver_info)
 	if( len != CmdResultLen )
 		return false;
 
-	// ²¨ÌØÂÊÆ¥ÅäÍê³É
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¥ï¿½ï¿½ï¿½ï¿½ï¿½
 	for( uint8_t i=0; i < 24; i++ )
 	{
-		if(i==0)      // Í£Ö¹ËùÓÐÐÅÏ¢Êä³ö
+		if(i==0)      // Í£Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½
 			len = sprintf( UM982Clr,  "UNLOG COM2\r\n");	
 			
-		else if(i==1) // Á÷¶¯Õ¾¹¤×÷Ä£Ê½
+		else if(i==1) // ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½Ä£Ê½
 			len = sprintf( UM982Clr,  "MODE HEADING2\r\n");	
 		
-		else if (i==2)// ÉèÖÃ RTK Ä£¿éÖ¸Áî£¬Êý¾Ý×î´óÁäÆÚ£¬ÃëÎªµ¥Î»
+		else if (i==2)// ï¿½ï¿½ï¿½ï¿½ RTK Ä£ï¿½ï¿½Ö¸ï¿½î£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»
 			len = sprintf( UM982Clr,  "CONFIG RTK TIMEOUT 600\r\n");
 		
-		else if (i==3)// ÉèÖÃ½ÓÊÕµÄ DGPS²î·ÖÊý¾ÝµÄ×î´óÁäÆÚ£¬ÃëÎªµ¥Î»£¬½ÓÊÕµ½µÄÖÍºóÓÚÖ¸¶¨ÁäÆÚµÄ DGPS ²î·ÖÊý¾Ý±»ºöÂÔ£¬Ò²ÓÃÓÚ½ûÖ¹ DGPS ¶¨Î»¼ÆËã
+		else if (i==3)// ï¿½ï¿½ï¿½Ã½ï¿½ï¿½Õµï¿½ DGPSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ DGPS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½Ô£ï¿½Ò²ï¿½ï¿½ï¿½Ú½ï¿½Ö¹ DGPS ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
 			len = sprintf( UM982Clr,  "CONFIG DGPS TIMEOUT 600\r\n");
 		
-		else if (i==4)// ÉèÖÃË«ÌìÏß½ÓÊÕ»úµÄÖ÷ÌìÏß£¨ANT1£©Óë´ÓÌìÏß£¨ANT2£©Ö®¼ä¾àÀë±£³Ö¹Ì¶¨
+		else if (i==4)// ï¿½ï¿½ï¿½ï¿½Ë«ï¿½ï¿½ï¿½ß½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß£ï¿½ANT1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß£ï¿½ANT2ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ë±£ï¿½Ö¹Ì¶ï¿½
 			len = sprintf( UM982Clr,  "CONFIG HEADING FIXLENGTH\r\n");			
 		
-		else if (i==5)// ÉèÖÃ EVENT ¹¦ÄÜ£¬ÏÂ½µÑØÓÐÐ§¡¢Á½¸öÓÐÐ§Âö³åÖ®¼äµÄ×î¶ÌÊ±¼äÒªÇó, µ¥Î»ms¡£ÈôÐ¡ÓÚ TGuard£¬ÔòµÚ¶þ¸ö Event ±»ºöÊÓ¡£Ä¬ÈÏÖµ: 4£¬×îÐ¡£º 2£»×î´ó£º3,599,999
+		else if (i==5)// ï¿½ï¿½ï¿½ï¿½ EVENT ï¿½ï¿½ï¿½Ü£ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Òªï¿½ï¿½, ï¿½ï¿½Î»msï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ TGuardï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ Event ï¿½ï¿½ï¿½ï¿½ï¿½Ó¡ï¿½Ä¬ï¿½ï¿½Öµ: 4ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ 2ï¿½ï¿½ï¿½ï¿½ï¿½3,599,999
 			len = sprintf( UM982Clr,  "CONFIG EVENT ENABLE NEGATIVE 2\r\n");	
 		
-		else if (i==6)// ÉèÖÃ¹Ø±Õµ¥Æµ¶¨Î»×´Ì¬µÄÅÐ¶¨Ìõ¼þ£¬»ùÏß³¤¶È³¬¹ý 5km Ê±£¬¾«¶ÈÂú×ãÐèÇóÒÀÈ»¿ÉÒÔÊ¹ÓÃ¹Ì¶¨½â
+		else if (i==6)// ï¿½ï¿½ï¿½Ã¹Ø±Õµï¿½Æµï¿½ï¿½Î»×´Ì¬ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ï¿½È³ï¿½ï¿½ï¿½ 5km Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã¹Ì¶ï¿½ï¿½ï¿½
 			len = sprintf( UM982Clr,  "CONFIG SFRTK Enable\r\n");			
 		
-		else if (i==7)// ½« BDS ÏµÍ³ÎÀÐÇµÄ B1C&B2a ÐÅºÅ±àÈë RTCM Ð­Òé
+		else if (i==7)// ï¿½ï¿½ BDS ÏµÍ³ï¿½ï¿½ï¿½Çµï¿½ B1C&B2a ï¿½ÅºÅ±ï¿½ï¿½ï¿½ RTCM Ð­ï¿½ï¿½
 			len = sprintf( UM982Clr,  "CONFIG RTCMB1CB2a Enable\r\n");
 		
-		else if (i==8)// Ê¹ÄÜ½ÓÊÕ»ú¸ú×Ù GPS ÎÀÐÇÏµ
+		else if (i==8)// Ê¹ï¿½Ü½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ GPS ï¿½ï¿½ï¿½ï¿½Ïµ
 			len = sprintf( UM982Clr,  "UNMASK GPS\r\n");		
 		
-		else if (i==9)// Ê¹ÄÜ½ÓÊÕ»ú¸ú×Ù BDS ÎÀÐÇÏµÍ³
+		else if (i==9)// Ê¹ï¿½Ü½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ BDS ï¿½ï¿½ï¿½ï¿½ÏµÍ³
 			len = sprintf( UM982Clr,  "UNMASK BDS\r\n");
 		
-		else if (i==10)// Ê¹ÄÜ½ÓÊÕ»ú¸ú×Ù GLO ÎÀÐÇÏµÍ³
+		else if (i==10)// Ê¹ï¿½Ü½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ GLO ï¿½ï¿½ï¿½ï¿½ÏµÍ³
 			len = sprintf( UM982Clr, "UNMASK GLO\r\n");
 		
-		else if (i==11)// Ê¹ÄÜ½ÓÊÕ»ú¸ú×Ù GAL ÎÀÐÇÏµÍ³
+		else if (i==11)// Ê¹ï¿½Ü½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ GAL ï¿½ï¿½ï¿½ï¿½ÏµÍ³
 			len = sprintf( UM982Clr,  "UNMASK GAL\r\n");
 
-		else if (i==12)// Ê¹ÄÜ½ÓÊÕ»ú¸ú×Ù QZSS ÎÀÐÇÏµÍ³
+		else if (i==12)// Ê¹ï¿½Ü½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ QZSS ï¿½ï¿½ï¿½ï¿½ÏµÍ³
 			len = sprintf( UM982Clr,  "UNMASK QZSS\r\n");
 		
-		else if (i==13)// Êä³ö EVENT ·¢ÉúÊ±¿ÌµÄ¾«È·¾ø¶ÔÊ±¼ä¼°Ïà¶ÔÊ±¼ä
+		else if (i==13)// ï¿½ï¿½ï¿½ EVENT ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ÌµÄ¾ï¿½È·ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ä¼°ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 			len = sprintf( UM982Clr,  "LOG EVENTMARKB ONCHANGED\r\n");	
 
-	  else if (i==14)// ÉèÖÃ½ÓÊÕ»ú¸ú×ÙÎÀÐÇµÄÎÀÐÇ½ØÖ¹½Ç¶È
+	  else if (i==14)// ï¿½ï¿½ï¿½Ã½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Çµï¿½ï¿½ï¿½ï¿½Ç½ï¿½Ö¹ï¿½Ç¶ï¿½
 			len = sprintf( UM982Clr,  "MASK 10\r\n");	
 		
-		else if (i==15)// ½ÓÊÕ»úÄ¬ÉèÖÃÎª¶¯Ì¬Ä£Ê½
+		else if (i==15)// ï¿½ï¿½ï¿½Õ»ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Ì¬Ä£Ê½
 			len = sprintf( UM982Clr,  "RTKDYNAMICS DYNAMIC\r\n");	
 		
-		else if (i==16)// ½ÓÊÕ»úÔË¶¯µÄº½Ïò
+		else if (i==16)// ï¿½ï¿½ï¿½Õ»ï¿½ï¿½Ë¶ï¿½ï¿½Äºï¿½ï¿½ï¿½
 			len = sprintf( UM982Clr,  "UNIHEADINGB 0.1\r\n");
 
-		else if (i==17)// UTC Ê±¼ä
+		else if (i==17)// UTC Ê±ï¿½ï¿½
 			len = sprintf( UM982Clr,  "LOG TIMEB ONTIME 0.1\r\n");
 
-		else if (i==18)// ¾«¶ÈÒò×ÓÐÅÏ¢
+		else if (i==18)// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 			len = sprintf( UM982Clr,  "STADOPB 1\r\n");
 		
-//		else if (i==19)// Ô­Ê¼¹Û²âÊý¾ÝÐÅÏ¢
+//		else if (i==19)// Ô­Ê¼ï¿½Û²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 //			len = sprintf( UM982Clr,  "LOG COM1 RANGEB ONTIME 0.1\r\n");		
 //		
-//		else if (i==20)// GLONASS µ¼º½µçÎÄ
+//		else if (i==20)// GLONASS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			len = sprintf( UM982Clr,  "LOG COM1 GLORAWSTRINGB ONCHANGED\r\n");				
 	
-//		else if (i==21)// GPS µ¼º½µçÎÄ
+//		else if (i==21)// GPS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			len = sprintf( UM982Clr,  "LOG COM1 RAWGPSSUBFRAMEB ONCHANGED\r\n");		
 //		
-//		else if (i==22)// BDS µ¼º½µçÎÄ
+//		else if (i==22)// BDS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			len = sprintf( UM982Clr,  "LOG COM1 BDSRAWNAVSUBFRAMEB ONCHANGED\r\n");	
 
-//		else if (i==23)// QZSS µ¼º½µçÎÄ
+//		else if (i==23)// QZSS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			len = sprintf( UM982Clr,  "LOG COM1 QZSSRAWSUBFRAMEB ONCHANGED\r\n");
 		
-		else if (i==19)// Ö÷ÌìÏß¼ÆËã³öµÄ×î¼Ñ¿ÉÓÃÎ»ÖÃºÍËÙ¶ÈBestnav
+		else if (i==19)// ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¿ï¿½ï¿½ï¿½Î»ï¿½Ãºï¿½ï¿½Ù¶ï¿½Bestnav
 			len = sprintf( UM982Clr,  "BESTNAVB 0.05\r\n");
 
-//		else if (i==22)// 20Hz µÄ GNGGA ÐÅÏ¢
+//		else if (i==22)// 20Hz ï¿½ï¿½ GNGGA ï¿½ï¿½Ï¢
 //			len = sprintf( UM982Clr,  "GPGGA 0.05\r\n");
 				
 		else if (i==20)// HEADING2
@@ -293,9 +293,9 @@ static bool send_init_msg(DriverInfo& driver_info)
 		else if (i==21)// HEADING2
 			len = sprintf( UM982Clr,  "HEADINGMODE VARIABLELENGTH\r\n");
 		
-		else if (i==22)// ÉèÖÃcom2²¨ÌØÂÊÎª460800,8Î»Êý¾ÝÎ»,ÎÞÐ£Ñé,Ò»Î»Í£Ö¹Î»
+		else if (i==22)// ï¿½ï¿½ï¿½ï¿½com2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª460800,8Î»ï¿½ï¿½ï¿½ï¿½Î»,ï¿½ï¿½Ð£ï¿½ï¿½,Ò»Î»Í£Ö¹Î»
 			len = sprintf( UM982Clr,  "CONFIG COM1 460800 8 n 1\r\n");
-		else if (i==23)// ÉèÖÃcom2²¨ÌØÂÊÎª460800,8Î»Êý¾ÝÎ»,ÎÞÐ£Ñé,Ò»Î»Í£Ö¹Î»
+		else if (i==23)// ï¿½ï¿½ï¿½ï¿½com2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª460800,8Î»ï¿½ï¿½ï¿½ï¿½Î»,ï¿½ï¿½Ð£ï¿½ï¿½,Ò»Î»Í£Ö¹Î»
 			len = sprintf( UM982Clr,  "CONFIG COM2 460800 8 n 1\r\n");
 	
 		driver_info.port.write( (uint8_t*)&UM982Clr[0], len, portMAX_DELAY, portMAX_DELAY );	
@@ -311,7 +311,7 @@ static void RTK_Server(void* pvParameters)
 	DriverInfo driver_info = *(DriverInfo*)pvParameters;
 	delete (DriverInfo*)pvParameters;
 	
-	//×¢²á¾«×¼½µÂä´«¸ÐÆ÷
+	//×¢ï¿½á¾«×¼ï¿½ï¿½ï¿½ä´«ï¿½ï¿½ï¿½ï¿½
 	uint32_t precKey;
 	do
 	{
@@ -319,18 +319,18 @@ static void RTK_Server(void* pvParameters)
 		os_delay(1.0);
 	}while(precKey==0);
 	
-	//GPSÊ¶±ð×´Ì¬
+	//GPSÊ¶ï¿½ï¿½×´Ì¬
 	GPS_Scan_Operation current_GPS_Operation = GPS_Scan_Baud115200;
-	//Êý¾Ý¶ÁÈ¡×´Ì¬»ú
+	//ï¿½ï¿½ï¿½Ý¶ï¿½È¡×´Ì¬ï¿½ï¿½
 	__attribute__((aligned(4))) uint8_t frame_datas[2048];
-	//ÉÏ´Î¸üÐÂÊ±¼ä
+	//ï¿½Ï´Î¸ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 	TIME last_update_time;
 	
-	//µÈ´ý³õÊ¼»¯Íê³É
+	//ï¿½È´ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½
 	while( getInitializationCompleted() == false )
 		os_delay(0.1);	
 	
-	//×¢²áRtk¶Ë¿Ú
+	//×¢ï¿½ï¿½Rtkï¿½Ë¿ï¿½
 	RtkPort rtk_port;
 	rtk_port.ena = false;
 	rtk_port.write = driver_info.port.write;
@@ -340,7 +340,7 @@ static void RTK_Server(void* pvParameters)
 	
 	bool rtc_updated = false;
 	
-	//¶ÁÈ¡ÊÇ·ñÐèÒª¼ÇÂ¼PPK
+	//ï¿½ï¿½È¡ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½ï¿½Â¼PPK
 	bool record_ppk = false;
 	uint8_t log_ppk[8];
 	if( ReadParam( "SDLog_PPK", 0, 0, (uint64_t*)log_ppk, 0 ) == PR_OK )
@@ -352,9 +352,9 @@ static void RTK_Server(void* pvParameters)
 GPS_CheckBaud:
 	while(1)
 	{
-		//¸ü¸ÄÖ¸¶¨²¨ÌØÂÊ
+		//ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		driver_info.port.SetBaudRate( current_GPS_Operation, 3, 0.1 );
-		//ÇÐ»»²¨ÌØÂÊ
+		//ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		switch(current_GPS_Operation)
 		{
 			case GPS_Scan_Baud9600:
@@ -374,13 +374,13 @@ GPS_CheckBaud:
 				current_GPS_Operation = GPS_Scan_Baud9600;
 				break;
 		}
-		//·¢ËÍÅäÖÃ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if( send_init_msg(driver_info) == false )
 			continue;
 
-		//¸ü¸Ä²¨ÌØÂÊ
+		//ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½
 		driver_info.port.SetBaudRate( 460800, 1, 0.1 );		
-		//Çå¿Õ½ÓÊÕ»º³åÇø×¼±¸½ÓÊÕÊý¾Ý
+		//ï¿½ï¿½Õ½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		driver_info.port.reset_rx(0.1);
 		GPS_State_Machine gps_state;
 		ResetRxStateMachine(&gps_state);
@@ -395,7 +395,7 @@ GPS_CheckBaud:
 				if( res )
 				{
 					if( gps_state.frame_id == 2118 )
-					{	//ÒÑÊ¶±ð,Ìø×ªµ½gps½ÓÊÕ³ÌÐò
+					{	//ï¿½ï¿½Ê¶ï¿½ï¿½,ï¿½ï¿½×ªï¿½ï¿½gpsï¿½ï¿½ï¿½Õ³ï¿½ï¿½ï¿½
 						goto GPS_Present;
 					}
 				}
@@ -404,7 +404,7 @@ GPS_CheckBaud:
 	}	
 	
 GPS_Present:
-	//ÖØ·¢ÅäÖÃ
+	//ï¿½Ø·ï¿½ï¿½ï¿½ï¿½ï¿½
 	//send_init_msg(driver_info);
 		
 	uint32_t sensor_key = 0;
@@ -412,34 +412,34 @@ GPS_Present:
 	GpsDAOConfig gps_cfg;
 	if( ReadParamGroup( "GPSDAOCfg", (uint64_t*)&gps_cfg, 0 ) == PR_OK )
 	{	
-		//×¢²á´«¸ÐÆ÷
+		//×¢ï¿½á´«ï¿½ï¿½ï¿½ï¿½
 		sensor_key = PositionSensorRegister( default_rtk_sensor_index , \
 																					"RTK_UM982" ,\
 																					Position_Sensor_Type_GlobalPositioning , \
 																					Position_Sensor_DataType_sv_xy , \
 																					Position_Sensor_frame_ENU , \
-																					gps_cfg.delay[0] , //ÑÓÊ±
-																					30 , //xyÐÅÈÎ¶È
-																					30 //zÐÅÈÎ¶È
+																					gps_cfg.delay[0] , //ï¿½ï¿½Ê±
+																					30 , //xyï¿½ï¿½ï¿½Î¶ï¿½
+																					30 //zï¿½ï¿½ï¿½Î¶ï¿½
 																				);	
 		
-		//×¢²á²àÏò´«¸ÐÆ÷
+		//×¢ï¿½ï¿½ï¿½ï¿½ò´«¸ï¿½ï¿½ï¿½
 		dao_key = DAOSensorRegister( 0, "DRTK", vector3<double>(gps_cfg.DRTK_VecX[0],gps_cfg.DRTK_VecY[0],gps_cfg.DRTK_VecZ[0]), false, gps_cfg.delay[0] );
 	}
 	else
-	{	//×¢²á´«¸ÐÆ÷
+	{	//×¢ï¿½á´«ï¿½ï¿½ï¿½ï¿½
 		sensor_key = PositionSensorRegister( default_rtk_sensor_index , \
 																					"RTK_UM982" ,\
 																					Position_Sensor_Type_GlobalPositioning , \
 																					Position_Sensor_DataType_sv_xy , \
 																					Position_Sensor_frame_ENU , \
-																					0.1 , //ÑÓÊ±
-																					30 , //xyÐÅÈÎ¶È
-																					30 //zÐÅÈÎ¶È
+																					0.1 , //ï¿½ï¿½Ê±
+																					30 , //xyï¿½ï¿½ï¿½Î¶ï¿½
+																					30 //zï¿½ï¿½ï¿½Î¶ï¿½
 																				);
 		gps_cfg.DRTK_VecX[0] = gps_cfg.DRTK_VecY[0] = gps_cfg.DRTK_VecZ[0] = 0;
 	}
-	//¿ªÆôRtk×¢Èë
+	//ï¿½ï¿½ï¿½ï¿½Rtk×¢ï¿½ï¿½
 	RtkPort_setEna( rtk_port_ind, true );
  
 	//gps×´Ì¬
@@ -450,7 +450,7 @@ GPS_Present:
 	double gps_alt;
 	TIME gps_update_TIME;
 	
-	//Çå¿Õ½ÓÊÕ»º³åÇø×¼±¸½ÓÊÕÊý¾Ý
+	//ï¿½ï¿½Õ½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	driver_info.port.reset_rx(0.1);
 	GPS_State_Machine gps_state,gps_state_nmea;
 	ResetRxStateMachine(&gps_state);
@@ -460,21 +460,21 @@ GPS_Present:
 	struct Dop_Pack
 	{	
 		uint32_t itow;
-		float gdop;//¼¸ºÎ¾«¶ÈÒò×Ó
-		float pdop;//Î»ÖÃ¾«¶ÈÒò×Ó
-		float tdop;//Ê±¼ä¾«¶ÈÒò×Ó
-		float vdop;//´¹Ö±¾«¶ÈÒò×Ó
-		float hdop;//Ë®Æ½¾«¶ÈÒò×Ó
-		float ndop;//±±Ïò¾«¶ÈÒò×Ó
-		float edop;//¶«Ïò¾«¶ÈÒò×Ó
-		float Cutoff;//½ØÖÁ¸ß¶È½Ç  
+		float gdop;//ï¿½ï¿½ï¿½Î¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		float pdop;//Î»ï¿½Ã¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		float tdop;//Ê±ï¿½ä¾«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		float vdop;//ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		float hdop;//Ë®Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		float ndop;//ï¿½ï¿½ï¿½ò¾«¶ï¿½ï¿½ï¿½ï¿½ï¿½
+		float edop;//ï¿½ï¿½ï¿½ò¾«¶ï¿½ï¿½ï¿½ï¿½ï¿½
+		float Cutoff;//ï¿½ï¿½ï¿½ï¿½ï¿½ß¶È½ï¿½  
 		float rsv2;
 		uint16_t svNum;
 		uint16_t prn;
 	}__attribute__((packed));
 	Dop_Pack dop_pack = {0};		
 	
-	//¸½¼ÓÊý¾Ý
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	double addition_inf[8] = {0};
 	
 	while(1)
@@ -485,51 +485,51 @@ GPS_Present:
 			if( GPS_ParseByte( &gps_state, frame_datas, r_data ) )
 			{
 				if( gps_state.frame_id == 2118 )
-				{// BESTNAV ×î¼ÑÎ»ÖÃºÍËÙ¶È
-					//¼ÇÂ¼
+				{// BESTNAV ï¿½ï¿½ï¿½Î»ï¿½Ãºï¿½ï¿½Ù¶ï¿½
+					//ï¿½ï¿½Â¼
 					if(record_ppk)
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );		
 					
 					last_update_time = TIME::now();
 					struct Best_Nav_Pack
 					{	
-						uint32_t PosStatus;//Î»ÖÃ½â×´Ì¬
-						uint32_t PosType;//Î»ÖÃÀàÐÍ
-						double lat;//Î³¶È£¬deg
-						double lon;//¾­¶È£¬deg
-						double height;//º£°Î¸ß£¬m
-						float undulation;//´óµØË®×¼Ãæ²î¾à- ´óµØË®×¼ÃæºÍWGS84 ÍÖÇòÃæÖ®¼äµÄ¾à,Ã×
-						uint32_t datum_id;//×ø±êÏµ ID ºÅ,µ±Ç°½öÖ§³Ö WGS84
-						float LatAcc;//Î³¶È±ê×¼²î£¬m 
-						float LonAcc;//¾­¶È±ê×¼²î£¬m 
-						float HeightAcc;//¸ß¶È±ê×¼²î£¬m 
-						uint8_t stn_id[4];//»ùÕ¾ ID
-						float diff_age;//²î·ÖÁäÆÚ£¬s  
-						float sol_age;//½âµÄÁäÆÚ£¬s  
-						uint8_t SVTrack;//¸ú×ÙµÄÎÀÐÇÊý  
-						uint8_t SVUse;//ÔÚ½âÖÐÊ¹ÓÃµÄÎÀÐÇÊý
+						uint32_t PosStatus;//Î»ï¿½Ã½ï¿½×´Ì¬
+						uint32_t PosType;//Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+						double lat;//Î³ï¿½È£ï¿½deg
+						double lon;//ï¿½ï¿½ï¿½È£ï¿½deg
+						double height;//ï¿½ï¿½ï¿½Î¸ß£ï¿½m
+						float undulation;//ï¿½ï¿½ï¿½Ë®×¼ï¿½ï¿½ï¿½ï¿½- ï¿½ï¿½ï¿½Ë®×¼ï¿½ï¿½ï¿½WGS84 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ä¾ï¿½,ï¿½ï¿½
+						uint32_t datum_id;//ï¿½ï¿½ï¿½ï¿½Ïµ ID ï¿½ï¿½,ï¿½ï¿½Ç°ï¿½ï¿½Ö§ï¿½ï¿½ WGS84
+						float LatAcc;//Î³ï¿½È±ï¿½×¼ï¿½î£¬m 
+						float LonAcc;//ï¿½ï¿½ï¿½È±ï¿½×¼ï¿½î£¬m 
+						float HeightAcc;//ï¿½ß¶È±ï¿½×¼ï¿½î£¬m 
+						uint8_t stn_id[4];//ï¿½ï¿½Õ¾ ID
+						float diff_age;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½s  
+						float sol_age;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½s  
+						uint8_t SVTrack;//ï¿½ï¿½ï¿½Ùµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+						uint8_t SVUse;//ï¿½Ú½ï¿½ï¿½ï¿½Ê¹ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						uint8_t rsv2[3];
-						uint8_t ext_sol_stat;//À©Õ¹½âµÄ×´Ì¬
-						uint8_t mask1;//Galileo Ê¹ÓÃµÄÐÅºÅÑÚÂë
-						uint8_t mask2;//GPS, GLONASS ºÍ BDS Ê¹ÓÃµÄÐÅºÅÑÚÂë
-						uint32_t VelStatus;//ËÙ¶È½â×´Ì¬
-						uint32_t VelType;//ËÙ¶ÈÀàÐÍ
-						float latency;//¾ÝËÙ¶ÈÊ±±ê¼ÆËãµÄÑÓ³ÙÖµ£¬ÒÔÃëÎªµ¥Î»
-						float age;//²î·ÖÁäÆÚ£¬s  
-						double horSpeed;//¶ÔµØË®Æ½ËÙ¶È£¬m/s 
-						double horSpeedAngle;//Ïà¶ÔÓÚÕæ±±µÄÊµ¼Ê¶ÔµØÔË¶¯·½Ïò£¨Ïà¶ÔµØÃæ¹ì¼££©£¬deg
-						double VerticalSpeed;//´¹Ö±ËÙ¶È£¬m/s
-						float VerspdStd;//¸ß³ÌËÙ¶È±ê×¼²î£¬µ¥Î» m/s
-						float HorspdStd;//Ë®Æ½ËÙ¶È±ê×¼²î£¬µ¥Î» m/s  
+						uint8_t ext_sol_stat;//ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½×´Ì¬
+						uint8_t mask1;//Galileo Ê¹ï¿½Ãµï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½
+						uint8_t mask2;//GPS, GLONASS ï¿½ï¿½ BDS Ê¹ï¿½Ãµï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½
+						uint32_t VelStatus;//ï¿½Ù¶È½ï¿½×´Ì¬
+						uint32_t VelType;//ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½ï¿½
+						float latency;//ï¿½ï¿½ï¿½Ù¶ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»
+						float age;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½s  
+						double horSpeed;//ï¿½Ôµï¿½Ë®Æ½ï¿½Ù¶È£ï¿½m/s 
+						double horSpeedAngle;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ±±ï¿½ï¿½Êµï¿½Ê¶Ôµï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½ì¼£ï¿½ï¿½ï¿½ï¿½deg
+						double VerticalSpeed;//ï¿½ï¿½Ö±ï¿½Ù¶È£ï¿½m/s
+						float VerspdStd;//ï¿½ß³ï¿½ï¿½Ù¶È±ï¿½×¼ï¿½î£¬ï¿½ï¿½Î» m/s
+						float HorspdStd;//Ë®Æ½ï¿½Ù¶È±ï¿½×¼ï¿½î£¬ï¿½ï¿½Î» m/s  
 					}__attribute__((packed));
 					Best_Nav_Pack* pack = (Best_Nav_Pack*)&frame_datas[gps_state.header_length];
 				
 					uint8_t gps_fix = 0;
-					if(pack->PosType==16||(pack->PosType==17)||(pack->PosType==18))// µ¥µã¶¨Î»
+					if(pack->PosType==16||(pack->PosType==17)||(pack->PosType==18))// ï¿½ï¿½ï¿½ã¶¨Î»
 						gps_fix = 3; 
-					else if(pack->PosType==32||pack->PosType==33||pack->PosType==34)//RTK ¸¡µã½â
+					else if(pack->PosType==32||pack->PosType==33||pack->PosType==34)//RTK ï¿½ï¿½ï¿½ï¿½ï¿½
 						gps_fix = 5;	
-					else if(pack->PosType==48||pack->PosType==49||pack->PosType==50)// RTK ¹Ì¶¨½â
+					else if(pack->PosType==48||pack->PosType==49||pack->PosType==50)// RTK ï¿½Ì¶ï¿½ï¿½ï¿½
 						gps_fix = 6;
 					
 //					double hdop = (pack->LatAcc+pack->LonAcc)*0.5;
@@ -595,8 +595,8 @@ GPS_Present:
 					velocity.z = pack->VerticalSpeed*100;	//Up
 					gps_alt += velocity.z*t;
 					if( vdop < 6 )
-					{	//¸ß¾«¶È¸ß¶ÈÎ»ÖÃ½á¹û
-						//Ê¹ÓÃ¾ø¶Ô¸ß¶È
+					{	//ï¿½ß¾ï¿½ï¿½È¸ß¶ï¿½Î»ï¿½Ã½ï¿½ï¿½
+						//Ê¹ï¿½Ã¾ï¿½ï¿½Ô¸ß¶ï¿½
 						double r_height = pack->height*100;
 						if( alt_offset <= -100000 )
 							alt_offset = r_height - gps_alt;
@@ -615,7 +615,7 @@ GPS_Present:
 					else
 						PositionSensorChangeDataType( default_rtk_sensor_index,sensor_key, Position_Sensor_DataType_sv_xy );
 					
-					//ÐÅÈÎ¶È
+					//ï¿½ï¿½ï¿½Î¶ï¿½
 					double xy_trustD = hdop*100;
 					double z_trustD = vdop*100;
 					PositionSensorUpdatePositionGlobalVel( default_rtk_sensor_index,sensor_key, position_Global, velocity, 
@@ -629,27 +629,27 @@ GPS_Present:
 					);
 				}
 				else if( gps_state.frame_id == 972 )
-				{// UNIHEADING º½ÏòÐÅÏ¢
+				{// UNIHEADING ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 					last_update_time = TIME::now();
 					struct Heading_Pack
 					{	
-						uint32_t solStatus;//Î»ÖÃ½â×´Ì¬
-						uint32_t posType;//Î»ÖÃÀàÐÍ
-						float length;	//»ùÏß³¤ (0 µ½ 3000 m)  
-						float heading;//º½Ïò (0 µ½ 360.0 deg)
-						float pitch;	//¸©Ñö(¡À90 deg)  
+						uint32_t solStatus;//Î»ï¿½Ã½ï¿½×´Ì¬
+						uint32_t posType;//Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+						float length;	//ï¿½ï¿½ï¿½ß³ï¿½ (0 ï¿½ï¿½ 3000 m)  
+						float heading;//ï¿½ï¿½ï¿½ï¿½ (0 ï¿½ï¿½ 360.0 deg)
+						float pitch;	//ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½90 deg)  
 						float rsv2;
-						float hdgstddev;//º½Ïò±ê×¼Æ«²î
-						float ptchstddev;//¸©Ñö±ê×¼Æ«²î
-						uint8_t stn_id[4];//»ùÕ¾ ID
-						uint8_t SVTrack;//¸ú×ÙµÄÎÀÐÇÊý  
-						uint8_t SVUse;//ÔÚ½âÖÐÊ¹ÓÃµÄÎÀÐÇÊý
-						uint8_t obs;//½ØÖ¹¸ß¶È½ÇÒÔÉÏµÄÎÀÐÇÊý
-						uint8_t multi;//½ØÖ¹¸ß¶È½ÇÒÔÉÏÓÐL2¹Û²âµÄÎÀÐÇÊý
+						float hdgstddev;//ï¿½ï¿½ï¿½ï¿½ï¿½×¼Æ«ï¿½ï¿½
+						float ptchstddev;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¼Æ«ï¿½ï¿½
+						uint8_t stn_id[4];//ï¿½ï¿½Õ¾ ID
+						uint8_t SVTrack;//ï¿½ï¿½ï¿½Ùµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+						uint8_t SVUse;//ï¿½Ú½ï¿½ï¿½ï¿½Ê¹ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+						uint8_t obs;//ï¿½ï¿½Ö¹ï¿½ß¶È½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+						uint8_t multi;//ï¿½ï¿½Ö¹ï¿½ß¶È½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½L2ï¿½Û²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						uint8_t rsv3;
-						uint8_t ext_sol_stat;//À©Õ¹½âµÄ×´Ì¬
-						uint8_t mask1;//Galileo Ê¹ÓÃµÄÐÅºÅÑÚÂë
-						uint8_t mask2;//GPS, GLONASS ºÍ BDS Ê¹ÓÃµÄÐÅºÅÑÚÂë						
+						uint8_t ext_sol_stat;//ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½×´Ì¬
+						uint8_t mask1;//Galileo Ê¹ï¿½Ãµï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½
+						uint8_t mask2;//GPS, GLONASS ï¿½ï¿½ BDS Ê¹ï¿½Ãµï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½						
 					}__attribute__((packed));
 					Heading_Pack* pack = (Heading_Pack*)&frame_datas[gps_state.header_length];			
 					double len_pos = sq(gps_cfg.DRTK_VecX[0]) + sq(gps_cfg.DRTK_VecY[0]) + sq(gps_cfg.DRTK_VecZ[0]);
@@ -672,19 +672,19 @@ GPS_Present:
 					}
 				}
 				else if(gps_state.frame_id == 309)
-				{// EVENT´¥·¢
+				{// EVENTï¿½ï¿½ï¿½ï¿½
 					last_update_time = TIME::now();
 					struct Event_Pack
 					{	
 						uint32_t itow;
-						uint8_t eventID;//ÊÂ¼þ±àÂë£¨Event 1 »òEvent 2£©
-						uint8_t status; //ÊÂ¼þ×´Ì¬£¨´ý¶¨£©  
+						uint8_t eventID;//ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ë£¨Event 1 ï¿½ï¿½Event 2ï¿½ï¿½
+						uint8_t status; //ï¿½Â¼ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 						uint8_t reserved0;
 						uint8_t reserved1;
-						uint32_t week;  //ÖÜ
+						uint32_t week;  //ï¿½ï¿½
 						uint32_t reserved2;
-						uint32_t offset_second;   //°´µ±Ç° GGA Êä³öÆµÂÊ£¬EVENT Ê±¿ÌÓë×î½Ó½üµÄGGA Êä³öµÄ¾ø¶ÔÊ±¼äÖ®¼äµÄÆ«ÒÆÖµ(second)
-						uint32_t offset_SubSecond;//°´µ±Ç° GGA Êä³öÆµÂÊ£¬EVENT Ê±¿ÌÓë×î½Ó½üµÄGGA Êä³öµÄ¾ø¶ÔÊ±¼äÖ®¼äµÄÆ«ÒÆÖµ(nanosecond)
+						uint32_t offset_second;   //ï¿½ï¿½ï¿½ï¿½Ç° GGA ï¿½ï¿½ï¿½Æµï¿½Ê£ï¿½EVENT Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó½ï¿½ï¿½ï¿½GGA ï¿½ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ö®ï¿½ï¿½ï¿½Æ«ï¿½ï¿½Öµ(second)
+						uint32_t offset_SubSecond;//ï¿½ï¿½ï¿½ï¿½Ç° GGA ï¿½ï¿½ï¿½Æµï¿½Ê£ï¿½EVENT Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó½ï¿½ï¿½ï¿½GGA ï¿½ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ö®ï¿½ï¿½ï¿½Æ«ï¿½ï¿½Öµ(nanosecond)
 						uint16_t prn;
 					}__attribute__((packed));	
 					Event_Pack* pack = (Event_Pack*)&frame_datas[gps_state.header_length];	
@@ -692,26 +692,26 @@ GPS_Present:
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );						
 				}
 				else if(gps_state.frame_id == 954)
-				{// STADOP DOPÐÅÏ¢
+				{// STADOP DOPï¿½ï¿½Ï¢
 					last_update_time = TIME::now();
 					dop_pack = *(Dop_Pack*)&frame_datas[gps_state.header_length];	
 				}
 				else if(gps_state.frame_id == 101)
-				{// RECTIME ÐÅÏ¢
+				{// RECTIME ï¿½ï¿½Ï¢
 					last_update_time = TIME::now();
 					struct Time_Pack
 					{	
 						uint32_t itow;
-						uint32_t clock_status;//Ê±ÖÓÄ£ÐÍ×´Ì¬
-						double offset;//Ïà¶ÔÓÚ GPS Ê±µÄ½ÓÊÕ»úÖÓ²î
-						double Offset_std;//GPS Ê±¼äµ½ UTC Ê±¼äµÄÆ«
-						uint32_t year;//UTC Äê  
-						uint8_t month;//UTC ÔÂ (0-12)
-						uint8_t day;	//UTC Ìì (0-31)
+						uint32_t clock_status;//Ê±ï¿½ï¿½Ä£ï¿½ï¿½×´Ì¬
+						double offset;//ï¿½ï¿½ï¿½ï¿½ï¿½ GPS Ê±ï¿½Ä½ï¿½ï¿½Õ»ï¿½ï¿½Ó²ï¿½
+						double Offset_std;//GPS Ê±ï¿½äµ½ UTC Ê±ï¿½ï¿½ï¿½Æ«
+						uint32_t year;//UTC ï¿½ï¿½  
+						uint8_t month;//UTC ï¿½ï¿½ (0-12)
+						uint8_t day;	//UTC ï¿½ï¿½ (0-31)
 						uint8_t hour; //UTC Ð¡Ê± (0-23)  
-						uint8_t min;	//UTC ·ÖÖÓ (0-59)  
-						uint32_t ms;	//UTC ºÁÃë (0-60999)
-						uint32_t utc_status;//UTC ×´Ì¬£º0 = INVALID£¬ÎÞÐ§£» 1 =VALID£¬ÓÐÐ§£» 2 = WARNING 11 
+						uint8_t min;	//UTC ï¿½ï¿½ï¿½ï¿½ (0-59)  
+						uint32_t ms;	//UTC ï¿½ï¿½ï¿½ï¿½ (0-60999)
+						uint32_t utc_status;//UTC ×´Ì¬ï¿½ï¿½0 = INVALIDï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ 1 =VALIDï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ 2 = WARNING 11 
 					}__attribute__((packed));					
 					Time_Pack* pack = (Time_Pack*)&frame_datas[gps_state.header_length];	
 					
@@ -724,28 +724,28 @@ GPS_Present:
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );							
 				}				
 				else if(gps_state.frame_id == 43)
-				{// Ô­Ê¼¹Û²âÊý¾ÝÐÅÏ¢
+				{// Ô­Ê¼ï¿½Û²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 					if(record_ppk)
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );	
 					//debug_test[23] =	gps_state.frame_datas_length;
 				}
 				else if(gps_state.frame_id == 1695)
-				{// BDS µ¼º½µçÎÄ
+				{// BDS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					if(record_ppk)
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );						
 				}
 				else if(gps_state.frame_id == 722)
-				{// GLONASS µ¼º½µçÎÄ
+				{// GLONASS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					if(record_ppk)
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );						
 				}
 				else if(gps_state.frame_id == 1330)
-				{// QZSS µ¼º½µçÎÄ
+				{// QZSS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					if(record_ppk)
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );						
 				}
 				else if(gps_state.frame_id == 25)
-				{// GPS µ¼º½µçÎÄ
+				{// GPS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					if(record_ppk)
 						SDLog_Ubx( (const char*)frame_datas, gps_state.frame_datas_length );						
 				}
@@ -754,24 +754,24 @@ GPS_Present:
 					last_update_time = TIME::now();
 					struct Heading2_Pack
 					{	
-						uint32_t solStatus;//Î»ÖÃ½â×´Ì¬
-						uint32_t posType;//Î»ÖÃÀàÐÍ
-						float length;	//»ùÏß³¤ (0 µ½ 3000 m)  
-						float heading;//º½Ïò (0 µ½ 360.0 deg)
-						float pitch;	//¸©Ñö(¡À90 deg)  ÒÆ¶¯Õ¾ÔÚ»ùÕ¾ÉÏ·½ÎªÕý
+						uint32_t solStatus;//Î»ï¿½Ã½ï¿½×´Ì¬
+						uint32_t posType;//Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+						float length;	//ï¿½ï¿½ï¿½ß³ï¿½ (0 ï¿½ï¿½ 3000 m)  
+						float heading;//ï¿½ï¿½ï¿½ï¿½ (0 ï¿½ï¿½ 360.0 deg)
+						float pitch;	//ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½90 deg)  ï¿½Æ¶ï¿½Õ¾ï¿½Ú»ï¿½Õ¾ï¿½Ï·ï¿½Îªï¿½ï¿½
 						float rsv2;
-						float hdgstddev;//º½Ïò±ê×¼Æ«²î
-						float ptchstddev;//¸©Ñö±ê×¼Æ«²î
-						uint8_t rover_stn_id[4];//»ùÕ¾ ID
-						uint8_t master_stn_id[4];//Ö÷Õ¾ ID
-						uint8_t SVTrack;//¸ú×ÙµÄÎÀÐÇÊý  
-						uint8_t SVUse;//ÔÚ½âÖÐÊ¹ÓÃµÄÎÀÐÇÊý
-						uint8_t obs;//½ØÖ¹¸ß¶È½ÇÒÔÉÏµÄÎÀÐÇÊý
-						uint8_t multi;//½ØÖ¹¸ß¶È½ÇÒÔÉÏÓÐL2¹Û²âµÄÎÀÐÇÊý
+						float hdgstddev;//ï¿½ï¿½ï¿½ï¿½ï¿½×¼Æ«ï¿½ï¿½
+						float ptchstddev;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¼Æ«ï¿½ï¿½
+						uint8_t rover_stn_id[4];//ï¿½ï¿½Õ¾ ID
+						uint8_t master_stn_id[4];//ï¿½ï¿½Õ¾ ID
+						uint8_t SVTrack;//ï¿½ï¿½ï¿½Ùµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+						uint8_t SVUse;//ï¿½Ú½ï¿½ï¿½ï¿½Ê¹ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+						uint8_t obs;//ï¿½ï¿½Ö¹ï¿½ß¶È½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+						uint8_t multi;//ï¿½ï¿½Ö¹ï¿½ß¶È½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½L2ï¿½Û²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						uint8_t rsv3;
-						uint8_t ext_sol_stat;//À©Õ¹½âµÄ×´Ì¬
-						uint8_t mask1;//Galileo Ê¹ÓÃµÄÐÅºÅÑÚÂë
-						uint8_t mask2;//GPS, GLONASS ºÍ BDS Ê¹ÓÃµÄÐÅºÅÑÚÂë						
+						uint8_t ext_sol_stat;//ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½×´Ì¬
+						uint8_t mask1;//Galileo Ê¹ï¿½Ãµï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½
+						uint8_t mask2;//GPS, GLONASS ï¿½ï¿½ BDS Ê¹ï¿½Ãµï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½						
 					}__attribute__((packed));
 					Heading2_Pack* pack = (Heading2_Pack*)&frame_datas[gps_state.header_length];
 					
@@ -808,19 +808,19 @@ GPS_Present:
 			}
 			
 			if( last_update_time.get_pass_time() > 2 )
-			{	//½ÓÊÕ²»µ½Êý¾Ý
+			{	//ï¿½ï¿½ï¿½Õ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				PositionSensorUnRegister( default_rtk_sensor_index,sensor_key );
 				DAOSensorUnRegister(0,dao_key);
-				//¹Ø±ÕRtk×¢Èë
+				//ï¿½Ø±ï¿½Rtk×¢ï¿½ï¿½
 				RtkPort_setEna( rtk_port_ind, false );
 				goto GPS_CheckBaud;
 			}	
 		}
 		else
-		{	//½ÓÊÕ²»µ½Êý¾Ý
+		{	//ï¿½ï¿½ï¿½Õ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			PositionSensorUnRegister( default_rtk_sensor_index,sensor_key );
 			DAOSensorUnRegister(0,dao_key);
-			//¹Ø±ÕRtk×¢Èë
+			//ï¿½Ø±ï¿½Rtk×¢ï¿½ï¿½
 			RtkPort_setEna( rtk_port_ind, false );
 			goto GPS_CheckBaud;
 		}	
