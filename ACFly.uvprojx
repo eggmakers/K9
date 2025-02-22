@@ -970,6 +970,11 @@
               <FileType>8</FileType>
               <FilePath>.\Drivers\drv_RTCMInput.cpp</FilePath>
             </File>
+            <File>
+              <FileName>drv_ADM001.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Drivers\drv_ADM001.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1394,5 +1399,14 @@
     <components/>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>ACFly</LayName>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
 
 </Project>

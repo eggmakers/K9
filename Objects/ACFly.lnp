@@ -101,6 +101,7 @@
 ".\objects\drv_yt_viewlink.o"
 ".\objects\drv_us100.o"
 ".\objects\drv_rtcminput.o"
+".\objects\drv_adm001.o"
 ".\objects\drv_can_radar_tr60_ah.o"
 ".\objects\drv_can_qoar1271_av.o"
 ".\objects\drv_can_mr72_av.o"

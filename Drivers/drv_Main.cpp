@@ -57,8 +57,8 @@
 // 串口避障
 #include "drv_TFMiniAv.hpp"
 #include "drv_MR72_UartAv.hpp"
-// 二次开发接口
-#include "drv_SDI.hpp"
+// 串口称重
+#include "drv_ADM001.hpp"
 
 // CAN设备
 #include "drv_Can.hpp"
@@ -180,6 +180,8 @@ void init_drv_Main()
 	// 串口避障
 	init_drv_TFMiniAv();
 	init_drv_MR72_UartAv();
+	// 串口稱重
+	init_drv_ADM001();
 	// 二次开发接口
 	// init_drv_SDI();
 

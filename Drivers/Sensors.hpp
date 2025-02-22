@@ -96,12 +96,14 @@ extern const uint8_t default_gps_sensor_index;
 extern const uint8_t default_rtk_sensor_index;
 extern const uint8_t default_uwb_sensor_index;
 extern const uint8_t default_mmWaveRadarAH_sensor_index;
+extern const uint8_t default_weight_sensor_index;
 
 enum Position_Sensor_Type
 {
 	Position_Sensor_Type_GlobalPositioning = 0,	  // 全球定位（经纬度定位，如GPS）
 	Position_Sensor_Type_RelativePositioning = 1, // 相对定位（如气压计，参照物不会改变）
 	Position_Sensor_Type_RangePositioning = 2,	  // 距离定位（测距定位，如超声波，参照物可能会变化）
+	Position_Sensor_Type_StaticWeight = 3,		  // 用於重量測量
 };
 enum Position_Sensor_DataType
 {
@@ -131,6 +133,9 @@ enum Position_Sensor_DataType
 	Position_Sensor_DataType_sv_xy_nAC = 116,
 	Position_Sensor_DataType_sv_z_nAC = 117,
 	Position_Sensor_DataType_sv_xyz_nAC = 118,
+
+	// 重量測量
+	Position_Sensor_DataType_w = 208
 };
 #define isACDataTypePosSensor(x) (x < 100)
 enum Position_Sensor_frame
@@ -140,6 +145,8 @@ enum Position_Sensor_frame
 
 	Position_Sensor_frame_SLAM = 4,		 // 位置速度数据在SLAM坐标系下(伪ENU，修正航向时会单独修正此传感器本身航向，而不修正真实航向)
 	Position_Sensor_frame_PSlamVFlu = 5, // 位置数据在SLAM坐标系下(伪ENU，修正航向时会单独修正此传感器本身航向，而不修正真实航向),速度数据为FLU系
+
+	Position_Sensor_frame_Raw = 7
 };
 struct Position_Sensor_Data
 {
