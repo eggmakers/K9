@@ -17,7 +17,6 @@
 #include "Fences.hpp"
 #include "ControlSystem.hpp"
 #include "AuxFuncs.hpp"
-
 #include "debug.hpp"
 
 #if 1 // 如果没有这段，则需要在target选项中选择使用USE microLIB

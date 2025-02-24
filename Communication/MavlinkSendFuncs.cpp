@@ -14,6 +14,7 @@
 #include "Parameters.hpp"
 #include "StorageSystem.hpp"
 #include "Modes.hpp"
+#include "drv_ADM001.hpp"
 
 bool Msg206_ACFlyPosSensor_INFO(uint8_t port, mavlink_message_t *msg_sd, uint8_t ind)
 {
@@ -439,7 +440,7 @@ static bool Msg29_SCALED_PRESSURE(uint8_t port, mavlink_message_t *msg_sd)
 		msg_sd,
 		TIME::get_System_Run_Time() * 1e3, // boot ms
 		pressure_internal * 1e-3,
-		0,
+		weight_kg,
 		pressure_internal_temperature * 100,
 		0);
 	return true;

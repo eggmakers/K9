@@ -10,6 +10,7 @@
 bool ADM001_last_read_ok = false;
 uint16_t ADM001_recv_sum = 0;
 uint16_t ADM001_calc_sum = 0;
+float weight_kg = 0.0f;
 
 struct DriverInfo
 {
@@ -56,7 +57,7 @@ static void ADM001_Server(void *pvParameters)
             continue;
         }
 
-        // 验证CRC
+        // 验证
         uint8_t calc_sum = checksum(response, sizeof(response) - 1); // 计算前6字节的和;
         uint8_t recv_sum = response[sizeof(response) - 1];           // 最后1字节是校验和
         ADM001_recv_sum = recv_sum;
@@ -65,15 +66,11 @@ static void ADM001_Server(void *pvParameters)
             continue;
         // 解析重量数据（小端序）
         uint32_t raw_weight = (response[3] << 16) | (response[4] << 8) | response[5];
-        float weight_kg = raw_weight / 1000.0f; // 转换为千克
+        weight_kg = raw_weight / 1000.0f; // 转换为千克
 
         // 上报重量数据（假设使用Z轴表示重量）
         vector3<double> weight_data;
         weight_data.z = weight_kg;
-        PositionSensorUpdatePosition(default_weight_sensor_index,
-                                     driver_info.sensor_key,
-                                     weight_data,
-                                     true);
 
         vTaskDelay(pdMS_TO_TICKS(100)); // 100ms采样间隔
     }
