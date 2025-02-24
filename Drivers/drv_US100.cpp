@@ -25,8 +25,31 @@ static void US100_Server(void *pvParameters)
 	{
 		// 读取温度
 		buf[0] = 0x50;
-		// if (read_ok)
 		driver_info.port.write(buf, 1, 2, 0.5);
+		if (driver_info.port.read(buf, 1, 2, 0.5) == false)
+		{
+			driver_info.port.reset_rx(2);
+			continue;
+		}
+		float temperature = (float)buf[0] - 45;
+
+		// 读取距离
+		buf[0] = 0x55;
+		driver_info.port.write(buf, 1, 2, 0.5);
+		if (driver_info.port.read(buf, 2, 2, 0.5) == false)
+		{
+			driver_info.port.reset_rx(2);
+			continue;
+		}
+		vector3<double> position;
+		position.z = ((buf[0] << 8) | buf[1]) * 0.1;
+		// 获取倾角
+		Quaternion quat;
+		get_Airframe_quat(&quat);
+		double lean_cosin = quat.get_lean_angle_cosin();
+		// 更新
+		position.z *= lean_cosin;
+		PositionSensorUpdatePosition(default_ultrasonic_sensor_index, driver_info.sensor_key, position, true);
 	}
 }
 

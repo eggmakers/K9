@@ -1,10 +1,15 @@
 #include "drv_US100.hpp"
+#include "drv_ADM001.hpp"
 #include "Commulink.hpp"
 #include "Basic.hpp"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "SensorsBackend.hpp"
 #include "MeasurementSystem.hpp"
+
+bool ADM001_last_read_ok = false;
+uint16_t ADM001_recv_sum = 0;
+uint16_t ADM001_calc_sum = 0;
 
 struct DriverInfo
 {
@@ -13,27 +18,15 @@ struct DriverInfo
     uint32_t sensor_key;
 };
 
-// ADM001 CRC16校验计算（Modbus RTU）
-static uint16_t crc16(uint8_t *data, uint16_t len)
+// 累加和校验函数
+static uint8_t checksum(uint8_t *data, uint8_t len)
 {
-    uint16_t crc = 0xFFFF;
-    for (uint16_t pos = 0; pos < len; pos++)
+    uint8_t sum = 0;
+    for (uint8_t i = 0; i < len; i++)
     {
-        crc ^= (uint16_t)data[pos];
-        for (int i = 8; i != 0; i--)
-        {
-            if ((crc & 0x0001) != 0)
-            {
-                crc >>= 1;
-                crc ^= 0xA001;
-            }
-            else
-            {
-                crc >>= 1;
-            }
-        }
+        sum += data[i];
     }
-    return crc;
+    return sum;
 }
 
 static void ADM001_Server(void *pvParameters)
@@ -41,7 +34,7 @@ static void ADM001_Server(void *pvParameters)
     DriverInfo driver_info = *(DriverInfo *)pvParameters;
     delete (DriverInfo *)pvParameters;
     const uint8_t read_cmd[4] = {0x01, 0x02, 0x00, 0x03}; // 读取重量指令
-    uint8_t response[9];                                  // 预期响应：01 03 04 00 4E 20 XX XX (CRC)
+    uint8_t response[7];                                  // 预期响应：01 03 01 00 00 03 08
     driver_info.port.reset_rx(2);
     while (1)
     {
@@ -64,13 +57,13 @@ static void ADM001_Server(void *pvParameters)
         }
 
         // 验证CRC
-        uint16_t recv_crc = (response[sizeof(response) - 2] << 8) | response[sizeof(response) - 1];
-        if (crc16(response, sizeof(response) - 2) != recv_crc)
-        {
+        uint8_t calc_sum = checksum(response, sizeof(response) - 1); // 计算前6字节的和;
+        uint8_t recv_sum = response[sizeof(response) - 1];           // 最后1字节是校验和
+        ADM001_recv_sum = recv_sum;
+        ADM001_calc_sum = calc_sum;
+        if (calc_sum != recv_sum)
             continue;
-        }
-
-        // 解析重量数据（大端序）
+        // 解析重量数据（小端序）
         uint32_t raw_weight = (response[3] << 16) | (response[4] << 8) | response[5];
         float weight_kg = raw_weight / 1000.0f; // 转换为千克
 

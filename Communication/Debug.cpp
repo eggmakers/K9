@@ -2,6 +2,7 @@
 #include "FreeRTOS.h"
 #include "drv_USB.hpp"
 #include "drv_Uart1.hpp"
+#include "drv_ADM001.hpp"
 #include "Sensors.hpp"
 #include "MeasurementSystem.hpp"
 #include "mavlink.h"
@@ -34,9 +35,9 @@ static void Debug_task(void *pvParameters)
 			if (GetPositionSensorData(default_weight_sensor_index, &weight_data))
 			{
 				// 根据ADM001协议解析数据
-				float real_weight = weight_data.position.z;						// Z轴存储重量
-				uint16_t raw_value = (uint16_t)(weight_data.position.x * 1000); // X轴原始值
-				float temp = 0;
+				float real_weight = weight_data.position.z; // Z轴存储重量
+				uint16_t raw_value = ADM001_recv_sum;		// X轴原始值
+				float temp = (float)ADM001_calc_sum;
 
 				mavlink_msg_debug_vect_pack_chan(
 					get_CommulinkSysId(),
