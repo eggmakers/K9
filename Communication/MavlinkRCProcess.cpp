@@ -1222,9 +1222,9 @@ static void Msg110_FILE_TRANSFER_PROTOCOL(uint8_t Port_index, const mavlink_mess
 				{ // 无错误
 				  // 在task分段计算crc结果
 				  // 防止卡死
-					//							ftpRes.opCode = opCodeRspAck;
-					//							ftpRes.size = 4;
-					//							*(uint32_t*)ftpRes.data = crc;
+				  //							ftpRes.opCode = opCodeRspAck;
+				  //							ftpRes.size = 4;
+				  //							*(uint32_t*)ftpRes.data = crc;
 				}
 				else
 				{ // 错误返回错误消息
@@ -1819,7 +1819,7 @@ static void Msg43_MISSION_REQUEST_LIST(uint8_t Port_index, const mavlink_message
 						&msg_sd,
 						msg->sysid,				 // target system
 						msg->compid,			 // target component
-						getMissionsCount() + 1,	 // count
+						getMissionsCount(),		 // count
 						MAV_MISSION_TYPE_MISSION // mission type
 					);
 					break;
@@ -1865,10 +1865,39 @@ static void Msg40_MISSION_REQUEST(uint8_t Port_index, const mavlink_message_t *m
 			default:
 			case MAV_MISSION_TYPE_MISSION:
 			{
-				if (msg_rd->seq == 0)
+				MissionInf wp_inf;
+				if (ReadMission(msg_rd->seq, &wp_inf))
 				{
-					vector2<double> homeLatLon;
-					getHomeLatLon(&homeLatLon);
+					//				mavlink_message_t msg_sd;
+					//				mavlink_lock_chan( Port_index, 0.01 );
+					//				mavlink_msg_mission_item_pack_chan(
+					//					get_CommulinkSysId() ,	//system id
+					//					get_CommulinkCompId() ,	//component id
+					//					Port_index ,	//chan
+					//					&msg_sd,
+					//					msg->sysid ,	//target system
+					//					msg->compid ,	//target component
+					//					msg_rd->seq ,	//seq
+					//					wp_inf.frame, //frame
+					//					wp_inf.cmd , //command
+					//					(msg_rd->seq==getCurrentMissionInd()) ? 1:0 ,	//current
+					//					wp_inf.autocontinue ,	//autocontinue
+					//					wp_inf.params[0] ,	//hold time(decimal seconds)
+					//					wp_inf.params[1] ,	//acceptance radius in meters(hit waypoint)
+					//					wp_inf.params[2] ,	//radius in meters to pass the waypoint
+					//					wp_inf.params[3] ,	//desired yaw angle
+					//					wp_inf.params[4], wp_inf.params[5], wp_inf.params[6], //x y z
+					//					MAV_MISSION_TYPE_MISSION
+					//				);
+					//				mavlink_msg_to_send_buffer(port->write,
+					//																	 port->lock,
+					//																	 port->unlock,
+					//																	 &msg_sd, 0, 0.01);
+					//				mavlink_unlock_chan(Port_index);
+
+					double x, y;
+					x = wp_inf.params[4] * 1e7;
+					y = wp_inf.params[5] * 1e7;
 
 					mavlink_message_t msg_sd;
 					if (mavlink_lock_chan(Port_index, 0.01))
@@ -1881,59 +1910,21 @@ static void Msg40_MISSION_REQUEST(uint8_t Port_index, const mavlink_message_t *m
 							msg->sysid,										 // target system
 							msg->compid,									 // target component
 							msg_rd->seq,									 // seq
-							MAV_FRAME_GLOBAL,								 // frame
-							MAV_CMD_NAV_WAYPOINT,							 // command
+							wp_inf.frame,									 // frame
+							wp_inf.cmd,										 // command
 							(msg_rd->seq == getCurrentMissionInd()) ? 1 : 0, // current
-							0,												 // autocontinue
-							0,												 // hold time(decimal seconds)
-							0,												 // acceptance radius in meters(hit waypoint)
-							0,												 // radius in meters to pass the waypoint
-							0,												 // desired yaw angle
-							homeLatLon.x * 1e7, homeLatLon.y * 1e7, 0,		 // x y z
+							wp_inf.autocontinue,							 // autocontinue
+							wp_inf.params[0],								 // hold time(decimal seconds)
+							wp_inf.params[1],								 // acceptance radius in meters(hit waypoint)
+							wp_inf.params[2],								 // radius in meters to pass the waypoint
+							wp_inf.params[3],								 // desired yaw angle
+							x, y, wp_inf.params[6],							 // x y z
 							MAV_MISSION_TYPE_MISSION);
 						mavlink_msg_to_send_buffer(port->write,
 												   port->lock,
 												   port->unlock,
 												   &msg_sd, 0, 0.01);
 						mavlink_unlock_chan(Port_index);
-					}
-				}
-				else
-				{
-					MissionInf wp_inf;
-					if (ReadMission(msg_rd->seq - 1, &wp_inf))
-					{
-						double x, y;
-						x = wp_inf.params[4] * 1e7;
-						y = wp_inf.params[5] * 1e7;
-
-						mavlink_message_t msg_sd;
-						if (mavlink_lock_chan(Port_index, 0.01))
-						{
-							mavlink_msg_mission_item_int_pack_chan(
-								get_CommulinkSysId(),  // system id
-								get_CommulinkCompId(), // component id
-								Port_index,			   // chan
-								&msg_sd,
-								msg->sysid,										 // target system
-								msg->compid,									 // target component
-								msg_rd->seq,									 // seq
-								wp_inf.frame,									 // frame
-								wp_inf.cmd,										 // command
-								(msg_rd->seq == getCurrentMissionInd()) ? 1 : 0, // current
-								wp_inf.autocontinue,							 // autocontinue
-								wp_inf.params[0],								 // hold time(decimal seconds)
-								wp_inf.params[1],								 // acceptance radius in meters(hit waypoint)
-								wp_inf.params[2],								 // radius in meters to pass the waypoint
-								wp_inf.params[3],								 // desired yaw angle
-								x, y, wp_inf.params[6],							 // x y z
-								MAV_MISSION_TYPE_MISSION);
-							mavlink_msg_to_send_buffer(port->write,
-													   port->lock,
-													   port->unlock,
-													   &msg_sd, 0, 0.01);
-							mavlink_unlock_chan(Port_index);
-						}
 					}
 				}
 				break;
@@ -1998,10 +1989,12 @@ static void Msg51_MISSION_REQUEST_INT(uint8_t Port_index, const mavlink_message_
 			default:
 			case MAV_MISSION_TYPE_MISSION:
 			{
-				if (msg_rd->seq == 0)
+				MissionInf wp_inf;
+				if (ReadMission(msg_rd->seq, &wp_inf))
 				{
-					vector2<double> homeLatLon;
-					getHomeLatLon(&homeLatLon);
+					double x, y;
+					x = wp_inf.params[4] * 1e7;
+					y = wp_inf.params[5] * 1e7;
 
 					mavlink_message_t msg_sd;
 					if (mavlink_lock_chan(Port_index, 0.01))
@@ -2014,59 +2007,21 @@ static void Msg51_MISSION_REQUEST_INT(uint8_t Port_index, const mavlink_message_
 							msg->sysid,										 // target system
 							msg->compid,									 // target component
 							msg_rd->seq,									 // seq
-							MAV_FRAME_GLOBAL,								 // frame
-							MAV_CMD_NAV_WAYPOINT,							 // command
+							wp_inf.frame,									 // frame
+							wp_inf.cmd,										 // command
 							(msg_rd->seq == getCurrentMissionInd()) ? 1 : 0, // current
-							0,												 // autocontinue
-							0,												 // hold time(decimal seconds)
-							0,												 // acceptance radius in meters(hit waypoint)
-							0,												 // radius in meters to pass the waypoint
-							0,												 // desired yaw angle
-							homeLatLon.x * 1e7, homeLatLon.y * 1e7, 0,		 // x y z
+							wp_inf.autocontinue,							 // autocontinue
+							wp_inf.params[0],								 // hold time(decimal seconds)
+							wp_inf.params[1],								 // acceptance radius in meters(hit waypoint)
+							wp_inf.params[2],								 // radius in meters to pass the waypoint
+							wp_inf.params[3],								 // desired yaw angle
+							x, y, wp_inf.params[6],							 // x y z
 							MAV_MISSION_TYPE_MISSION);
 						mavlink_msg_to_send_buffer(port->write,
 												   port->lock,
 												   port->unlock,
 												   &msg_sd, 0, 0.01);
 						mavlink_unlock_chan(Port_index);
-					}
-				}
-				else
-				{
-					MissionInf wp_inf;
-					if (ReadMission(msg_rd->seq - 1, &wp_inf))
-					{
-						double x, y;
-						x = wp_inf.params[4] * 1e7;
-						y = wp_inf.params[5] * 1e7;
-
-						mavlink_message_t msg_sd;
-						if (mavlink_lock_chan(Port_index, 0.01))
-						{
-							mavlink_msg_mission_item_int_pack_chan(
-								get_CommulinkSysId(),  // system id
-								get_CommulinkCompId(), // component id
-								Port_index,			   // chan
-								&msg_sd,
-								msg->sysid,										 // target system
-								msg->compid,									 // target component
-								msg_rd->seq,									 // seq
-								wp_inf.frame,									 // frame
-								wp_inf.cmd,										 // command
-								(msg_rd->seq == getCurrentMissionInd()) ? 1 : 0, // current
-								wp_inf.autocontinue,							 // autocontinue
-								wp_inf.params[0],								 // hold time(decimal seconds)
-								wp_inf.params[1],								 // acceptance radius in meters(hit waypoint)
-								wp_inf.params[2],								 // radius in meters to pass the waypoint
-								wp_inf.params[3],								 // desired yaw angle
-								x, y, wp_inf.params[6],							 // x y z
-								MAV_MISSION_TYPE_MISSION);
-							mavlink_msg_to_send_buffer(port->write,
-													   port->lock,
-													   port->unlock,
-													   &msg_sd, 0, 0.01);
-							mavlink_unlock_chan(Port_index);
-						}
 					}
 				}
 				break;
@@ -2250,22 +2205,22 @@ static void Msg44_MISSION_COUNT(uint8_t Port_index, const mavlink_message_t *msg
 												   port->unlock,
 												   &msg_sd, 0, 0.01);
 
-						//								mavlink_msg_mission_request_pack_chan(
-						//									get_CommulinkSysId() ,	//system id
-						//									get_CommulinkCompId() ,	//component id
-						//									Port_index ,	//chan
-						//									&msg_sd,
-						//									msg->sysid ,	//target system
-						//									msg->compid ,	//target component
-						//									0 ,	//seq
-						//									MAV_MISSION_TYPE_MISSION	//mission type
-						//
-						//								);
-						//								mavlink_msg_to_send_buffer(port->write,
-						//																					 port->lock,
-						//																					 port->unlock,
-						//																					 &msg_sd, 1, 1);
-						//								mavlink_unlock_chan(Port_index);
+						mavlink_msg_mission_request_pack_chan(
+							get_CommulinkSysId(),  // system id
+							get_CommulinkCompId(), // component id
+							Port_index,			   // chan
+							&msg_sd,
+							msg->sysid,				 // target system
+							msg->compid,			 // target component
+							0,						 // seq
+							MAV_MISSION_TYPE_MISSION // mission type
+
+						);
+						mavlink_msg_to_send_buffer(port->write,
+												   port->lock,
+												   port->unlock,
+												   &msg_sd, 0, 0.01);
+						mavlink_unlock_chan(Port_index);
 					}
 
 					// 超时请求
@@ -2826,7 +2781,7 @@ static void Msg69_MANUAL_CONTROL(uint8_t Port_index, const mavlink_message_t *ms
 		return;
 	}
 
-	float raw_data[16];
+	float raw_data[16] = {0};
 	raw_data[0] = msg_rd->x * 0.05 + 50;
 	raw_data[1] = msg_rd->y * 0.05 + 50;
 	raw_data[2] = msg_rd->z * 0.05 + 50;
@@ -2835,13 +2790,18 @@ static void Msg69_MANUAL_CONTROL(uint8_t Port_index, const mavlink_message_t *ms
 	uint8_t bias = 0;
 	if ((msg_rd->enabled_extensions & (1 << 2)) == (1 << 2))
 	{ // 扩展通道
-		const int16_t *extAxis = &msg_rd->extendedAxis1;
+		const int8_t *extAxis = (const int8_t *)&msg_rd->extendedAxis1;
+
 		for (uint8_t i = 0; i < 4; ++i)
 		{
-			if ((msg->len > 20 + i * 2) && extAxis[i] != INT16_MAX)
+			if ((msg->len > 20 + i * 2))
 			{
-				raw_data[4 + bias] = extAxis[i] * 0.05 + 50;
-				++bias;
+				int16_t extAxisValue = (extAxis[i * 2 + 0] << 0) | (extAxis[i * 2 + 1] << 8);
+				if (extAxisValue != INT16_MAX)
+				{
+					raw_data[4 + bias] = extAxisValue * 0.05 + 50;
+					++bias;
+				}
 			}
 		}
 	}
@@ -2878,8 +2838,26 @@ static void Msg75_COMMAND_INT(uint8_t Port_index, const mavlink_message_t *msg)
 				mode_msg.params[1] = msg_rd->param2;
 				mode_msg.params[2] = msg_rd->param3;
 				mode_msg.params[3] = msg_rd->param4;
-				mode_msg.params[4] = msg_rd->x * 1e-7;
-				mode_msg.params[5] = msg_rd->y * 1e-7;
+				switch (msg_rd->frame)
+				{
+				case MAV_FRAME_GLOBAL:
+				case MAV_FRAME_GLOBAL_RELATIVE_ALT:
+				case MAV_FRAME_GLOBAL_INT:
+				case MAV_FRAME_GLOBAL_RELATIVE_ALT_INT:
+				case MAV_FRAME_GLOBAL_TERRAIN_ALT:
+				case MAV_FRAME_GLOBAL_TERRAIN_ALT_INT:
+				{
+					mode_msg.params[4] = msg_rd->x * 1e-7;
+					mode_msg.params[5] = msg_rd->y * 1e-7;
+					break;
+				}
+				default:
+				{
+					mode_msg.params[4] = msg_rd->x * 1e-4;
+					mode_msg.params[5] = msg_rd->y * 1e-4;
+					break;
+				}
+				}
 				mode_msg.params[6] = msg_rd->z;
 				SendMsgToMode(mode_msg, 0.01);
 			}
@@ -3091,6 +3069,23 @@ bool lidar_slam_pos_register_key = 0;
 
 static void Msg102_VISION_POSITION_ESTIMATE(uint8_t Port_index, const mavlink_message_t *msg)
 {
+	const mavlink_vision_position_estimate_t *msg_rd = (mavlink_vision_position_estimate_t *)msg->payload64;
+
+	// 求视觉姿态四元数
+	double sinRol, cosRol;
+	double sinPit, cosPit;
+	double sinYaw, cosYaw;
+	fast_sin_cos(0.5 * msg_rd->roll, &sinRol, &cosRol);
+	fast_sin_cos(0.5 * msg_rd->pitch, &sinPit, &cosPit);
+	fast_sin_cos(0.5 * msg_rd->yaw, &sinYaw, &cosYaw);
+	Quaternion qRol = Quaternion(cosRol, sinRol, 0, 0);
+	Quaternion qPit = Quaternion(cosPit, 0, sinPit, 0);
+	Quaternion qYaw = Quaternion(cosYaw, 0, 0, sinYaw);
+	Quaternion quat = qYaw * qPit * qRol;
+	quat.Ned2Enu();
+	double slamYaw = quat.getYaw();
+
+	static uint32_t vpos_mag_key = 0;
 	if (!vslam_pos_register_key)
 	{
 		if (get_Attitude_MSStatus() != MS_Ready)
@@ -3098,7 +3093,7 @@ static void Msg102_VISION_POSITION_ESTIMATE(uint8_t Port_index, const mavlink_me
 
 		Quaternion quat;
 		get_Attitude_quat(&quat);
-		double initYaw = quat.getYaw();
+		double initYaw = quat.getYaw() - slamYaw;
 
 		vslam_pos_register_key = PositionSlamSensorRegister(default_vslam_pos_index,
 															"VSlam",
@@ -3109,14 +3104,74 @@ static void Msg102_VISION_POSITION_ESTIMATE(uint8_t Port_index, const mavlink_me
 															initYaw,
 															20,
 															20);
+		vpos_mag_key = IMUMagnetometerSlamRegister(Slam_Magnetometer_Index, SName("SLAM"), 0.0001);
 	}
 
-	const mavlink_vision_position_estimate_t *msg_rd = (mavlink_vision_position_estimate_t *)msg->payload64;
+	vector3<double> vMag = quat.reverse_rotate(vector3<double>(0, 6000, 0));
+	IMUMagnetometerUpdate(Slam_Magnetometer_Index, vpos_mag_key, vector3<int32_t>(vMag.x, vMag.y, vMag.z), false);
 
 	vector3<double> pos;
-	pos.x = msg_rd->x * 100;
-	pos.y = -msg_rd->y * 100;
+	//	pos.x = msg_rd->x*100;
+	//	pos.y = -msg_rd->y*100;
+	//	pos.z = -msg_rd->z*100;
+	pos.x = msg_rd->y * 100;
+	pos.y = msg_rd->x * 100;
 	pos.z = -msg_rd->z * 100;
+
+	//	debug_test[13] = msg_rd->x;
+	//	debug_test[14] = msg_rd->y;
+
+	PositionSensorUpdatePosition(default_vslam_pos_index, vslam_pos_register_key, pos, true);
+}
+static void Msg331_ODOMETRY(uint8_t Port_index, const mavlink_message_t *msg)
+{
+	const mavlink_odometry_t *msg_rd = (mavlink_odometry_t *)msg->payload64;
+
+	// 求视觉姿态四元数
+	Quaternion quat(msg_rd->q[0], msg_rd->q[1], msg_rd->q[2], msg_rd->q[3]);
+	quat.Ned2Enu();
+	double slamYaw = quat.getYaw();
+
+	static uint32_t vpos_mag_key = 0;
+	if (!vslam_pos_register_key)
+	{
+		if (get_Attitude_MSStatus() != MS_Ready)
+			return;
+
+		Quaternion quat;
+		get_Attitude_quat(&quat);
+		double initYaw = quat.getYaw() - slamYaw;
+
+		vslam_pos_register_key = PositionSlamSensorRegister(default_vslam_pos_index,
+															"VSlam",
+															Position_Sensor_Type_RelativePositioning,
+															Position_Sensor_DataType_s_xyz,
+															Position_Sensor_frame_SLAM,
+															0.1,
+															initYaw,
+															20,
+															20);
+		vpos_mag_key = IMUMagnetometerSlamRegister(Slam_Magnetometer_Index, SName("SLAM"), 0.0001);
+	}
+
+	vector3<double> vMag = quat.reverse_rotate(vector3<double>(0, 6000, 0));
+	IMUMagnetometerUpdate(Slam_Magnetometer_Index, vpos_mag_key, vector3<int32_t>(vMag.x, vMag.y, vMag.z), false);
+
+	vector3<double> pos;
+	//	pos.x = msg_rd->x*100;
+	//	pos.y = -msg_rd->y*100;
+	//	pos.z = -msg_rd->z*100;
+	pos.x = msg_rd->y * 100;
+	pos.y = msg_rd->x * 100;
+	pos.z = -msg_rd->z * 100;
+
+	extern float debug_test[30];
+	debug_test[13] = msg_rd->x;
+	debug_test[14] = msg_rd->y;
+	debug_test[15] = rad2degree(slamYaw);
+
+	//	debug_test[13] = msg_rd->x;
+	//	debug_test[14] = msg_rd->y;
 
 	PositionSensorUpdatePosition(default_vslam_pos_index, vslam_pos_register_key, pos, true);
 }
@@ -3456,9 +3511,6 @@ static void Msg144_FOLLOW_TARGET(uint8_t Port_index, const mavlink_message_t *ms
 {
 	const mavlink_follow_target_t *msg_rd = (mavlink_follow_target_t *)msg->payload64;
 
-	extern float debug_test[30];
-	debug_test[13] += 1;
-
 	static uint32_t followKey = 0;
 	//	if( followKey == 0 )
 	//		followKey = followSensorRegister(followDataType_Gsv_xy);
@@ -3782,5 +3834,47 @@ void (*const Mavlink_RC_Process[])(uint8_t Port_index, const mavlink_message_t *
 		/*287-*/ 0,
 		/*288-*/ 0,
 		/*289-*/ 0,
+		/*290-*/ 0,
+		/*291-*/ 0,
+		/*292-*/ 0,
+		/*293-*/ 0,
+		/*294-*/ 0,
+		/*295-*/ 0,
+		/*296-*/ 0,
+		/*297-*/ 0,
+		/*298-*/ 0,
+		/*299-*/ 0,
+		/*300-*/ 0,
+		/*301-*/ 0,
+		/*302-*/ 0,
+		/*303-*/ 0,
+		/*304-*/ 0,
+		/*305-*/ 0,
+		/*306-*/ 0,
+		/*307-*/ 0,
+		/*308-*/ 0,
+		/*309-*/ 0,
+		/*310-*/ 0,
+		/*311-*/ 0,
+		/*312-*/ 0,
+		/*313-*/ 0,
+		/*314-*/ 0,
+		/*315-*/ 0,
+		/*316-*/ 0,
+		/*317-*/ 0,
+		/*318-*/ 0,
+		/*319-*/ 0,
+		/*320-*/ 0,
+		/*321-*/ 0,
+		/*322-*/ 0,
+		/*323-*/ 0,
+		/*324-*/ 0,
+		/*325-*/ 0,
+		/*326-*/ 0,
+		/*327-*/ 0,
+		/*328-*/ 0,
+		/*329-*/ 0,
+		/*330-*/ 0,
+		/*331-*/ Msg331_ODOMETRY,
 };
 const uint16_t Mavlink_RC_Process_Count = sizeof(Mavlink_RC_Process) / sizeof(void *);

@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32H743xx,ARM_MATH_CM7,__FPU_PRESENT=1,DCACHE_SIZE=32</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Basic;.\Main;.\CMSIS;.\HAL_Library\inc;.\FreeRTOS\include;.\FreeRTOS\portable\RVDS\ARM_CM7\r0p1;.\FreeRTOS\CMSIS_RTOS;.\Drivers;.\USBDevice;.\USBDevice\Core\Inc;.\USBDevice\Class\CDC\Inc;.\Math;.\CMSIS\DSP\Include;.\FatFs\src;.\FatFs\src\option;.\Communication;.\MeasurementSystem;.\Filters;.\DataStructure;.\Communication\Mavlink;.\Communication\Mavlink\commonACFly;.\Modes;.\ControlSystem;.\littlefs;.\Communication\Mavlink\minimalACFly;.\Drivers</IncludePath>
+              <IncludePath>.\Basic;.\Main;.\CMSIS;.\HAL_Library\inc;.\FreeRTOS\include;.\FreeRTOS\portable\RVDS\ARM_CM7\r0p1;.\FreeRTOS\CMSIS_RTOS;.\Drivers;.\USBDevice;.\USBDevice\Core\Inc;.\USBDevice\Class\CDC\Inc;.\Math;.\CMSIS\DSP\Include;.\FatFs\src;.\FatFs\src\option;.\Communication;.\MeasurementSystem;.\Filters;.\DataStructure;.\Communication\Mavlink;.\Communication\Mavlink\commonACFly;.\Modes;.\ControlSystem;.\littlefs;.\Communication\Mavlink\minimalACFly</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -825,6 +825,11 @@
               <FileType>8</FileType>
               <FilePath>.\Drivers\drv_Can.cpp</FilePath>
             </File>
+            <File>
+              <FileName>drv_CRSF.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Drivers\drv_CRSF.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1004,6 +1009,26 @@
               <FileName>drv_CAN_MR72_BackAv.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\Drivers\drv_CAN_MR72_BackAv.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>drv_CAN_BMS_ZHIAN.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Drivers\drv_CAN_BMS_ZHIAN.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>drv_CAN_Engine_Xuanfu_7KW.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Drivers\drv_CAN_Engine_Xuanfu_7KW.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>drv_CAN_Engine_Xuanfu_16KW.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Drivers\drv_CAN_Engine_Xuanfu_16KW.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>drv_CAN_Engine_Zongshen.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Drivers\drv_CAN_Engine_Zongshen.cpp</FilePath>
             </File>
           </Files>
         </Group>

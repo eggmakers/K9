@@ -17,9 +17,20 @@ typedef struct
 {
 	uint8_t id;
 	uint8_t role;
-	int pos_x : 24, pos_y : 24, pos_z : 24;
-	int vel_x : 24, vel_y : 24, vel_z : 24;
-	int dis_0 : 24, dis_1 : 24, dis_2 : 24, dis_3 : 24, dis_4 : 24, dis_5 : 24, dis_6 : 24, dis_7 : 24;
+	int pos_x : 24;
+	int pos_y : 24;
+	int pos_z : 24;
+	int vel_x : 24;
+	int vel_y : 24;
+	int vel_z : 24;
+	int dis_0 : 24;
+	int dis_1 : 24;
+	int dis_2 : 24;
+	int dis_3 : 24;
+	int dis_4 : 24;
+	int dis_5 : 24;
+	int dis_6 : 24;
+	int dis_7 : 24;
 	float imuGyro[3];
 	float imuAcc[3];
 	uint8_t reserved1[12];

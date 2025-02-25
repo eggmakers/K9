@@ -160,13 +160,21 @@ static void CAN_Radar_BMS_TATTU_Server(void* pvParameters)
 									target_info_packet_header* packHeader = (target_info_packet_header*)&payLoadData[0];
 									target_info_packet_tail* packTail = (target_info_packet_tail*)&payLoadData[sizeof(target_info_packet_header)+batS*2];
 									uint16_t* batVolts = (uint16_t*)&payLoadData[sizeof(target_info_packet_header)];
-								
+									
+									float cellsVoltage[60];
+									memset(cellsVoltage, 0xff, 60*sizeof(float));
+									if(batS<120){
+										for(int i=0;i<batS;++i){
+											cellsVoltage[i] = batVolts[i]*0.001;
+										}
+								  }
+
 									float stVolt = batS*3.85f;
 									float powerUsage = stVolt * (packTail->batteryCapacityExpected - packTail->batteryCapacityRemain)*0.001f;
 									batteryUpdate( 0, driver_info.sensor_key,
 										true,	//available
 										packHeader->batteryMainVoltage*0.001f,	//totalVoltRaw
-										packHeader->batteryMainVoltage*0.001f, //totalVolt
+										packHeader->batteryMainVoltage*0.001f,  //totalVolt
 										stVolt,	//stVolt
 										packHeader->current*-0.01f,	//total current
 										&powerUsage,	//power usage
@@ -175,7 +183,9 @@ static void CAN_Radar_BMS_TATTU_Server(void* pvParameters)
 										packHeader->batteryTemp,	//temperature
 										packHeader->useCircleCount, //cycle count
 										packTail->errorFlag,	//error flags
-										0, 0 );
+										batS, // cells
+										cellsVoltage  // cellVolts
+									);
 								}
 							}
 							//复位状态机

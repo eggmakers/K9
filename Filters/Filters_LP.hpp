@@ -166,8 +166,7 @@ inline bool BUT_IIR_calc_freq_odd( double k[2] , double sample_freq, const doubl
 				this->in_1[0] += offset;	this->in_1[1] += offset;
 				this->out_1[0] += offset;	this->out_1[1] += offset;				
 				return this->out_1[0];
-			}
-			inline double add_offset( double offset1, double offset2 )
+			}inline double add_offset( double offset1, double offset2 )
 			{
 				this->in_1[0] += offset1;	this->in_1[1] += offset2;
 				this->out_1[0] += offset1;	this->out_1[1] += offset2;				
@@ -556,17 +555,6 @@ inline bool BUT_IIR_calc_freq_odd( double k[2] , double sample_freq, const doubl
 				for( uint8_t i=0; i<n; ++i ) {
 					this->in[i][0] += offset;	this->in[i][1] += offset;
 					this->out[i][0] += offset;	this->out[i][1] += offset;
-				}
-				return this->out[n-1][0];
-			}
-			inline double add_offset( double offset1, double offset2 )
-			{
-				uint8_t n = order/2;
-				if( order & 1 )
-					++n;
-				for( uint8_t i=0; i<n; ++i ) {
-					this->in[i][0] += offset1;	this->in[i][1] += offset2;
-					this->out[i][0] += offset1;	this->out[i][1] += offset2;
 				}
 				return this->out[n-1][0];
 			}

@@ -206,6 +206,18 @@ static bool send_init_msg(DriverInfo &driver_info)
 	if (len != CmdResultLen)
 		return false;
 
+	// 发送GNSS配置
+	bool isGPSCfgAvailble = false;
+	GpsConfig gps_cfg;
+	if (ReadParamGroup("GPS2Cfg", (uint64_t *)&gps_cfg, 0) == PR_OK)
+	{
+		gps_cfg.GNSS_Mode[0] &= 0b1111111;
+		if (gps_cfg.GNSS_Mode[0] != 0)
+		{ // 发送GNSS配置
+			isGPSCfgAvailble = true;
+		}
+	}
+
 	// 波特率匹配完成
 	for (uint8_t i = 0; i < 22; i++)
 	{
@@ -233,20 +245,90 @@ static bool send_init_msg(DriverInfo &driver_info)
 		else if (i == 7) // 将 BDS 系统卫星的 B1C&B2a 信号编入 RTCM 协议
 			len = sprintf(UM982Clr, "CONFIG RTCMB1CB2a Enable\r\n");
 
-		else if (i == 8) // 使能接收机跟踪 GPS 卫星系
-			len = sprintf(UM982Clr, "UNMASK GPS\r\n");
+		else if (i == 8)
+		{ // 使能接收机跟踪 GPS 卫星系
+			if (isGPSCfgAvailble)
+			{
+				if ((gps_cfg.GNSS_Mode[0] & (1 << 0)) == (1 << 0))
+				{
+					len = sprintf(UM982Clr, "UNMASK GPS\r\n");
+				}
+				else
+				{
+					len = sprintf(UM982Clr, "MASK GPS\r\n");
+				}
+			}
+			else
+				len = sprintf(UM982Clr, "UNMASK GPS\r\n");
+		}
 
-		else if (i == 9) // 使能接收机跟踪 BDS 卫星系统
-			len = sprintf(UM982Clr, "UNMASK BDS\r\n");
+		else if (i == 9)
+		{ // 使能接收机跟踪 BDS 卫星系统
+			if (isGPSCfgAvailble)
+			{
+				if ((gps_cfg.GNSS_Mode[0] & (1 << 3)) == (1 << 3))
+				{
+					len = sprintf(UM982Clr, "UNMASK BDS\r\n");
+				}
+				else
+				{
+					len = sprintf(UM982Clr, "MASK BDS\r\n");
+				}
+			}
+			else
+				len = sprintf(UM982Clr, "UNMASK BDS\r\n");
+		}
 
-		else if (i == 10) // 使能接收机跟踪 GLO 卫星系统
-			len = sprintf(UM982Clr, "UNMASK GLO\r\n");
+		else if (i == 10)
+		{ // 使能接收机跟踪 GLO 卫星系统
+			if (isGPSCfgAvailble)
+			{
+				if ((gps_cfg.GNSS_Mode[0] & (1 << 6)) == (1 << 6))
+				{
+					len = sprintf(UM982Clr, "UNMASK GLO\r\n");
+				}
+				else
+				{
+					len = sprintf(UM982Clr, "MASK GLO\r\n");
+				}
+			}
+			else
+				len = sprintf(UM982Clr, "UNMASK GLO\r\n");
+		}
 
-		else if (i == 11) // 使能接收机跟踪 GAL 卫星系统
-			len = sprintf(UM982Clr, "UNMASK GAL\r\n");
+		else if (i == 11)
+		{ // 使能接收机跟踪 GAL 卫星系统
+			if (isGPSCfgAvailble)
+			{
+				if ((gps_cfg.GNSS_Mode[0] & (1 << 2)) == (1 << 2))
+				{
+					len = sprintf(UM982Clr, "UNMASK GAL\r\n");
+				}
+				else
+				{
+					len = sprintf(UM982Clr, "MASK GAL\r\n");
+				}
+			}
+			else
+				len = sprintf(UM982Clr, "UNMASK GAL\r\n");
+		}
 
-		else if (i == 12) // 使能接收机跟踪 QZSS 卫星系统
-			len = sprintf(UM982Clr, "UNMASK QZSS\r\n");
+		else if (i == 12)
+		{ // 使能接收机跟踪 QZSS 卫星系统
+			if (isGPSCfgAvailble)
+			{
+				if ((gps_cfg.GNSS_Mode[0] & (1 << 5)) == (1 << 5))
+				{
+					len = sprintf(UM982Clr, "UNMASK QZSS\r\n");
+				}
+				else
+				{
+					len = sprintf(UM982Clr, "MASK QZSS\r\n");
+				}
+			}
+			else
+				len = sprintf(UM982Clr, "UNMASK QZSS\r\n");
+		}
 
 		else if (i == 13) // 输出 EVENT 发生时刻的精确绝对时间及相对时间
 			len = sprintf(UM982Clr, "LOG EVENTMARKB ONCHANGED\r\n");
@@ -471,6 +553,8 @@ GPS_Present:
 	} __attribute__((packed));
 	Dop_Pack dop_pack = {0};
 
+	// dao状态
+	TIME daoAvailableStartTime(false);
 	// 附加数据
 	double addition_inf[8] = {0};
 
@@ -690,8 +774,12 @@ GPS_Present:
 							pack->length * cosPit * 100 * sinY,
 							pack->length * sinPit * 100);
 						if (pack->solStatus == 0 && (pack->posType == 50 || pack->posType == 48))
+						{
+							daoAvailableStartTime = TIME::now();
 							available = true;
-						DAOSensorUpdate(0, dao_key, relPos, available);
+						}
+						if (available || daoAvailableStartTime.is_valid() == false || daoAvailableStartTime.get_pass_time() > 2)
+							DAOSensorUpdate(0, dao_key, relPos, available);
 					}
 				}
 				else if (gps_state.frame_id == 309)

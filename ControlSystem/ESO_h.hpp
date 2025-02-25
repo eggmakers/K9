@@ -31,6 +31,8 @@ class ESO_h
 		double b;		
 		//当前输出力（加速度）
 		double force;
+		//倾斜角
+		double leanCosin;
 
 		bool err_sign;
 		double err_continues_time;
@@ -42,6 +44,7 @@ class ESO_h
 			this->invT = 1.0f / T;
 			this->beta = beta*10;
 			this->betaAcc = betaAcc;
+			this->leanCosin = 1;
 			
 			b_filter.reset();
 			
@@ -75,11 +78,13 @@ class ESO_h
 			this->b = b_filter.x1 = 1000;
 		}
 		
-		inline void update_u( double u )
+		inline void update_u( double u, double cosin )
 		{
 			this->u = u;
+			this->leanCosin = cosin;
+			
 			this->z_inertia += this->h * this->invT * ( this->u - this->z_inertia );
-			this->force = this->b * this->z_inertia;
+			this->force = this->b * this->z_inertia * this->leanCosin;
 		}
 		
 		inline double get_u(){ return this->u; }

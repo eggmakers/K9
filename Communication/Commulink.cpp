@@ -729,7 +729,25 @@ void get_mav_modes(uint16_t &mav_mode, uint16_t &mav_main_mode, uint16_t &mav_su
 	if (MF_mode == AFunc_Stabilize)
 	{
 		mav_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
+		mav_main_mode = PX4_CUSTOM_MAIN_MODE_STABILIZED;
+		mav_sub_mode = 0;
+	}
+	else if (MF_mode == AFunc_Rattitude)
+	{
+		mav_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
+		mav_main_mode = PX4_CUSTOM_MAIN_MODE_RATTITUDE;
+		mav_sub_mode = 0;
+	}
+	else if (MF_mode == AFunc_PosHold)
+	{
+		mav_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
 		mav_main_mode = PX4_CUSTOM_MAIN_MODE_POSCTL;
+		mav_sub_mode = PX4_CUSTOM_SUB_MODE_POSCTL_POSCTL;
+	}
+	else if (MF_mode == AFunc_Manual)
+	{
+		mav_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
+		mav_main_mode = PX4_CUSTOM_MAIN_MODE_MANUAL;
 		mav_sub_mode = 0;
 	}
 	else if (MF_mode == AFunc_PosHold)
@@ -815,6 +833,12 @@ void get_mav_modes(uint16_t &mav_mode, uint16_t &mav_main_mode, uint16_t &mav_su
 		mav_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
 		mav_main_mode = PX4_CUSTOM_MAIN_MODE_AUTO;
 		mav_sub_mode = PX4_CUSTOM_SUB_MODE_AUTO_FOLLOW_TARGET;
+	}
+	else if (MF_mode == AFunc_Strike)
+	{ // 打击模式
+		mav_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
+		mav_main_mode = PX4_CUSTOM_MAIN_MODE_AUTO;
+		mav_sub_mode = PX4_CUSTOM_SUB_MODE_AUTO_STRIKE;
 	}
 }
 
@@ -1391,7 +1415,7 @@ static void Commulink_Server(void *pvParameters)
 					paramProtocolTask(false);
 
 				// ftp任务
-				//				ftpProtocolTask();
+				ftpProtocolTask();
 
 				/*发送航点请求*/
 				// 任务超时再次请求变量
@@ -1434,25 +1458,25 @@ static void Commulink_Server(void *pvParameters)
 										mavlink_unlock_chan(i);
 									}
 
-									//										if( mavlink_lock_chan( i, 0.01 ) )
-									//										{
-									//											mavlink_msg_mission_request_pack_chan(
-									//												get_CommulinkSysId() ,	//system id
-									//												get_CommulinkCompId() ,	//component id
-									//												i ,	//chan
-									//												&msg_sd,
-									//												RqMissiontarget_sysid[i] ,	//target system
-									//												RqMissiontarget_compid[i] ,	//target component
-									//												0 ,	//seq
-									//												MAV_MISSION_TYPE_MISSION	//mission type
-									//
-									//											);
-									//											mavlink_msg_to_send_buffer(port->write,
-									//																								 port->lock,
-									//																								 port->unlock,
-									//																								 &msg_sd, 0, 0.01);
-									//											mavlink_unlock_chan(i);
-									//										}
+									if (mavlink_lock_chan(i, 0.01))
+									{
+										mavlink_msg_mission_request_pack_chan(
+											get_CommulinkSysId(),  // system id
+											get_CommulinkCompId(), // component id
+											i,					   // chan
+											&msg_sd,
+											RqMissiontarget_sysid[i],  // target system
+											RqMissiontarget_compid[i], // target component
+											0,						   // seq
+											MAV_MISSION_TYPE_MISSION   // mission type
+
+										);
+										mavlink_msg_to_send_buffer(port->write,
+																   port->lock,
+																   port->unlock,
+																   &msg_sd, 0, 0.01);
+										mavlink_unlock_chan(i);
+									}
 								}
 							}
 							else if (RqMissionInt[i])
@@ -1639,7 +1663,7 @@ static void Commulink_Server(void *pvParameters)
 			if (Ports[CommuPorts[i]].read != 0)
 			{ // 接收数据处理
 				// 每次接收64个字节进行处理
-				mavlink_message_t msg;
+				__attribute__((aligned(8))) mavlink_message_t msg;
 				uint8_t buf[64];
 				uint8_t length;
 				do

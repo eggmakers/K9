@@ -12,37 +12,37 @@
 #include "usb_composite.h"
 #include "MavlinkCMDProcess.hpp"
 
-// ±£´æÖ®Ç°Í¨µÀÖµ
+// ï¿½ï¿½ï¿½ï¿½Ö®Ç°Í¨ï¿½ï¿½Öµ
 static double last_Channel_values[16];
-// Í¨µÀÁÙÊ±±äÁ¿
+// Í¨ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
 static uint32_t channelTemp1[16] = {0};
 static float channelTemp2[16] = {0};
 static float channelTemp3[16] = {0};
-// ÔÆÌ¨ÊÇ·ñ×Ô¶¯¿ØÖÆ
+// ï¿½ï¿½Ì¨ï¿½Ç·ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
 static float GimbalCtrl_LockedAtt[16];
 
-/*ÈÈÑ¥´¥·¢*/
-// ÅÄÕÕ´ÎÊý
+/*ï¿½ï¿½Ñ¥ï¿½ï¿½ï¿½ï¿½*/
+// ï¿½ï¿½ï¿½Õ´ï¿½ï¿½ï¿½
 static uint16_t PhotoCnt = 0;
-// ÏàÆ¬ÐòºÅ
+// ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½
 static uint16_t PhotoIndex = 1;
 
-// ¿ªÊ¼µÈ´ý´¥·¢±êÖ¾
+// ï¿½ï¿½Ê¼ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾
 static bool waiting_IOTrig = false;
-// ·¢ËÍÍê³É±êÖ¾
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É±ï¿½Ö¾
 static EventGroupHandle_t IO_events = xEventGroupCreate();
 
 static SemaphoreHandle_t PosLogMutex = xSemaphoreCreateMutex();
 static bool SD_Pos_Record()
 {
-	// »ñÈ¡Ê±¼ä
+	// ï¿½ï¿½È¡Ê±ï¿½ï¿½
 	RTC_TimeStruct RTC_Time;
 	RTC_Time = Get_RTC_Time();
-	// »ñÈ¡ËÙ¶È
+	// ï¿½ï¿½È¡ï¿½Ù¶ï¿½
 	vector3<double> vel;
 	get_VelocityENU_Ctrl(&vel);
 
-	// »ñÈ¡×ËÌ¬
+	// ï¿½ï¿½È¡ï¿½ï¿½Ì¬
 	Quaternion airframe_quat;
 	get_Attitude_quat(&airframe_quat);
 	airframe_quat.Enu2Ned();
@@ -50,7 +50,7 @@ static bool SD_Pos_Record()
 	static int8_t global_pos_ind = -1;
 	PosSensorHealthInf3 posInf;
 	if (global_pos_ind < 0)
-	{ // µÚÒ»´Î»ñÈ¡×îÓÅÎ»ÖÃ´«¸ÐÆ÷
+	{ // ï¿½ï¿½Ò»ï¿½Î»ï¿½È¡ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (get_OptimalGlobal_XYZ(&posInf))
 			global_pos_ind = posInf.sensor_ind;
 	}
@@ -74,15 +74,15 @@ static bool SD_Pos_Record()
 		{
 			if (gps_sensor.data.available && gps_sensor.data.sensor_type == Position_Sensor_Type_GlobalPositioning)
 			{
-				// ¼ÆËã¾­Î³¶È
+				// ï¿½ï¿½ï¿½ã¾­Î³ï¿½ï¿½
 				map_projection_reproject(&posInf.mp,
 										 posInf.PositionENU.x + posInf.HOffset.x,
 										 posInf.PositionENU.y + posInf.HOffset.y,
 										 &lat, &lon);
-				// ¸ß¶È
+				// ï¿½ß¶ï¿½
 				alt = posInf.PositionENU.z + posInf.HOffset.z;
 				alt *= 0.01;
-				// ¾«¶È
+				// ï¿½ï¿½ï¿½ï¿½
 				accN = gps_sensor.inf.addition_inf[4] * 0.01;
 				accE = gps_sensor.inf.addition_inf[4] * 0.01;
 				accD = gps_sensor.inf.addition_inf[5] * 0.01;
@@ -128,7 +128,7 @@ static bool SD_Pos_Record()
 	if (!SDLog_Txt1(pos_txt_buf, n))
 		return false;
 
-	// ·¢ËÍÅÄÕÕÐÅÏ¢µ½µØÃæ??
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½??
 	double Altitude_Local = 0;
 	vector3<double> Position;
 	get_Position_Ctrl(&Position);
@@ -139,7 +139,7 @@ static bool SD_Pos_Record()
 
 	mavlink_message_t msg_sd;
 	for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-	{ // ±éÀúËùÓÐ¶Ë¿Ú
+	{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ë¿ï¿½
 		if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 		{
 			mavlink_msg_camera_feedback_pack_chan(
@@ -210,14 +210,14 @@ bool wait_IOTrig(double TIME)
 		return true;
 }
 
-// IO·­×ª¼ÆÊý??
+// IOï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½??
 extern "C" void TIM4_IRQHandler()
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	static TIME last_trig_TIME(false);
 	uint32_t SR = TIM4->SR;
 	if (SR & (1 << 2))
-	{ // ²¶»ñµ½IO¿ÚÏÂ½µÑØ
+	{ // ï¿½ï¿½ï¿½ï¿½IOï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½
 		uint32_t CCR2 = TIM4->CCR2;
 		double pass_t = last_trig_TIME.get_pass_time_st();
 
@@ -232,9 +232,9 @@ extern "C" void TIM4_IRQHandler()
 	}
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
-/*ÈÈÑ¥´¥·¢*/
+/*ï¿½ï¿½Ñ¥ï¿½ï¿½ï¿½ï¿½*/
 
-/*¼ÇÂ¼Pos*/
+/*ï¿½ï¿½Â¼Pos*/
 bool recordPos(bool acTrig)
 {
 	if (acTrig)
@@ -245,7 +245,7 @@ bool recordPos(bool acTrig)
 
 		mavlink_message_t msg_sd;
 		for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-		{ // ±éÀúËùÓÐ¶Ë¿Ú
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ë¿ï¿½
 			if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 			{
 				mavlink_msg_camera_status_pack_chan(
@@ -277,9 +277,9 @@ bool recordPos(bool acTrig)
 	}
 	return SD_Pos_Record();
 }
-/*¼ÇÂ¼Pos*/
+/*ï¿½ï¿½Â¼Pos*/
 
-/*ÅÄÕÕ¹¦ÄÜ*/
+/*ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½*/
 static SemaphoreHandle_t CamMutex = xSemaphoreCreateRecursiveMutex();
 bool AuxCamTakePhoto()
 {
@@ -296,7 +296,7 @@ bool AuxCamTakePhoto()
 		if (aux_configs.Aux_CamTrigEna[0])
 			wait_IOTrig_start();
 
-		// À­µÍ£¨À­¸ß£©Ïà»úPWM
+		// ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½PWM
 		for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 		{
 			uint16_t aux_cfg = ((uint16_t *)&aux_configs)[i * 4];
@@ -308,11 +308,11 @@ bool AuxCamTakePhoto()
 		}
 
 		if (cam_chans == 0)
-		{ // ÎÞÏà»ú·µ»Ø
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			uint8_t res = 0;
 
 			if (aux_configs.Aux_YTSurveyPic[0] > 0)
-			{ // Êý×ÖÔÆÌ¨ÐèÒªÅÄÕÕ
+			{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½
 				if (!aux_configs.Aux_CamTrigEna[0])
 					wait_IOTrig_start();
 
@@ -321,12 +321,12 @@ bool AuxCamTakePhoto()
 				SendCmdMsgToSingleCamera(cmd_msg, 0.01);
 
 				if (aux_configs.Aux_CamTrigEna[0] > 0)
-				{ // Êý×ÖÔÆÌ¨ÐèÒªµÈ´ýtrigÒý½Å´¥·¢
+				{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½Òªï¿½È´ï¿½trigï¿½ï¿½ï¿½Å´ï¿½ï¿½ï¿½
 					if (wait_IOTrig(aux_configs.Aux_CamShTime[0] > 1.5 ? 1.5 : aux_configs.Aux_CamShTime[0]))
 						res = 10;
 				}
 				else
-				{ // Êý×ÖÔÆÌ¨µÈ´ýÖ¸Áî»ØÀ¡
+				{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½È´ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½
 					wait_IOTrig(0);
 
 					double waitT = 0;
@@ -335,7 +335,7 @@ bool AuxCamTakePhoto()
 						CmdMsg msg;
 						bool msg_rd = ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0.002);
 						if (msg_rd)
-						{ // Ïà»ú·´À¡³É¹¦
+						{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½
 							res = msg.cmd;
 							break;
 						}
@@ -357,7 +357,7 @@ bool AuxCamTakePhoto()
 
 				mavlink_message_t msg_sd;
 				for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-				{ // ±éÀúËùÓÐ¶Ë¿Ú
+				{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ë¿ï¿½
 					if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 					{
 						mavlink_msg_camera_status_pack_chan(
@@ -387,7 +387,7 @@ bool AuxCamTakePhoto()
 					}
 				}
 
-				// Èç¹ûÎÞÐèµÈ´ýÄÚ²¿´¥·¢ÔòÁ¢¿Ì¼ÇÂ¼POS
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½Â¼POS
 				if (res != 3)
 					SD_Pos_Record();
 
@@ -397,7 +397,7 @@ bool AuxCamTakePhoto()
 				return false;
 		}
 
-		// À­¸ß£¨À­µÍ£©Ïà»úPWM
+		// ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½PWM
 		os_delay(aux_configs.Aux_CamShTime[0]);
 		for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 		{
@@ -412,7 +412,7 @@ bool AuxCamTakePhoto()
 
 		mavlink_message_t msg_sd;
 		for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-		{ // ±éÀúËùÓÐ¶Ë¿Ú
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ë¿ï¿½
 			if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 			{
 				mavlink_msg_camera_status_pack_chan(
@@ -443,7 +443,7 @@ bool AuxCamTakePhoto()
 		}
 
 		if (aux_configs.Aux_CamTrigEna[0])
-		{ // µÈ´ýÏà»úÈÈÑ¥
+		{ // ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¥
 			if (wait_IOTrig(aux_configs.Aux_CamShTime[0] > 1.5 ? 1.5 : aux_configs.Aux_CamShTime[0]) == false)
 			{
 				xSemaphoreGiveRecursive(CamMutex);
@@ -451,7 +451,7 @@ bool AuxCamTakePhoto()
 			}
 		}
 
-		// Èç¹ûÈÈÑ¥Ã»ÓÐÊ¹ÄÜÔòÁ¢¿Ì¼ÇÂ¼POS
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¥Ã»ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½Â¼POS
 		if (!aux_configs.Aux_CamTrigEna[0])
 			SD_Pos_Record();
 
@@ -486,7 +486,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 		if (camPhotoAsyncStep > 1)
 			xSemaphoreGiveRecursive(CamMutex);
 		camPhotoAsyncStep = camPhotoAsyncT = 0;
-		// Çå¿ÕÊý×ÖÔÆÌ¨·´À¡»º³åÇø
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		CmdMsg msg;
 		ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0);
 
@@ -494,7 +494,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 
 	if (camPhotoAsyncStep == 0)
-	{ // ¿ÕÏÐÊ±´¦ÀíÊý×ÖÔÆÌ¨ÅÄÕÕ·´À¡
+	{ // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½Õ·ï¿½ï¿½ï¿½
 		CmdMsg msg;
 		bool msg_rd = ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0);
 		if (msg_rd && msg.cmd == 1)
@@ -516,14 +516,14 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	switch (camPhotoAsyncStep)
 	{
 	case 1:
-	{ // ×¼±¸Æô¶¯´¥·¢
+	{ // ×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (xSemaphoreTakeRecursive(CamMutex, 0.1 * configTICK_RATE_HZ))
 		{
 			uint8_t cam_chans = 0;
 			lastCamPhotoAsyncPhotoIndex = PhotoIndex;
 
 			uint8_t MainMotorCount = get_MainMotorCount();
-			// Ê¹ÄÜÏà»úPWM
+			// Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½PWM
 			for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 			{
 				uint16_t aux_cfg = ((uint16_t *)&aux_configs)[i * 4];
@@ -536,21 +536,21 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 			camPhotoAsyncT = 0;
 
 			if (cam_chans == 0)
-			{ // ÎÞÏà»ú³¢ÊÔÊý×ÖÔÆÌ¨
+			{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 				uint8_t res = 0;
 
 				if (aux_configs.Aux_YTSurveyPic[0] > 0)
-				{ // Êý×ÖÔÆÌ¨ÐèÒªÅÄÕÕ
+				{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½
 					CmdMsg cmd_msg;
 					cmd_msg.cmd = MAV_CMD_IMAGE_START_CAPTURE;
 					SendCmdMsgToSingleCamera(cmd_msg, 0.01);
 
 					if (aux_configs.Aux_CamTrigEna[0] > 0)
-					{ // Êý×ÖÔÆÌ¨ÐèÒªµÈ´ýtrigÒý½Å´¥·¢
+					{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½Òªï¿½È´ï¿½trigï¿½ï¿½ï¿½Å´ï¿½ï¿½ï¿½
 						camPhotoAsyncStep = 20;
 					}
 					else
-					{ // ½øÈëÊý×ÖÔÆÌ¨µÈ´ýÖ¸Áî·´À¡²½Öè
+					{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½È´ï¿½Ö¸ï¿½î·´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						camPhotoAsyncStep = 30;
 					}
 				}
@@ -561,7 +561,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 				}
 			}
 			else
-			{ // Ïà»úÒý½Å´¥·¢Íê³É
+			{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				camPhotoAsyncStep = 10;
 			}
 		}
@@ -571,12 +571,12 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 
 	case 10:
-	{ // Ïà»úÒý½Å´¥·¢Íê³É
-		// ×¼±¸Ê§Ð§Ïà»úÒý½Å
+	{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ×¼ï¿½ï¿½Ê§Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 		if (camPhotoAsyncT > aux_configs.Aux_CamShTime[0])
 		{
-			// Ê§Ð§Ïà»úPWM
+			// Ê§Ð§ï¿½ï¿½ï¿½PWM
 			uint8_t MainMotorCount = get_MainMotorCount();
 			for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 			{
@@ -591,7 +591,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 
 			mavlink_message_t msg_sd;
 			for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-			{ // ±éÀúËùÓÐ¶Ë¿Ú
+			{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ë¿ï¿½
 				if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 				{
 					mavlink_msg_camera_status_pack_chan(
@@ -622,11 +622,11 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 			}
 
 			if (aux_configs.Aux_CamTrigEna[0])
-			{ // µÈ´ýÏà»úÈÈÑ¥
+			{ // ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¥
 				camPhotoAsyncStep = 20;
 			}
 			else
-			{ // Èç¹ûÈÈÑ¥Ã»ÓÐÊ¹ÄÜÔòÁ¢¿Ì¼ÇÂ¼POS
+			{ // ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¥Ã»ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½Â¼POS
 				SD_Pos_Record();
 				camPhotoAsyncStep = 11;
 				camPhotoAsyncT = 0;
@@ -637,7 +637,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 		break;
 	}
 	case 11:
-	{ // ÑÓÊ±µÈ´ýshÊ±¼ä
+	{ // ï¿½ï¿½Ê±ï¿½È´ï¿½shÊ±ï¿½ï¿½
 		if (camPhotoAsyncT > aux_configs.Aux_CamShTime[0])
 		{
 			resetCamPhotoAsyncStep;
@@ -647,7 +647,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 
 	case 20:
-	{ // µÈ´ýÈÈÑ¥´¥·¢
+	{ // ï¿½È´ï¿½ï¿½ï¿½Ñ¥ï¿½ï¿½ï¿½ï¿½
 		if (camPhotoAsyncT > aux_configs.Aux_CamShTime[0] && (lastCamPhotoAsyncPhotoIndex != PhotoIndex || camPhotoAsyncT > 1.5))
 		{
 			resetCamPhotoAsyncStep;
@@ -656,7 +656,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 		break;
 	}
 	case 30:
-	{ // Êý×ÖÔÆÌ¨µÈ´ý´¥·¢
+	{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½
 		CmdMsg msg;
 		bool msg_rd = ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0);
 		if (msg_rd)
@@ -669,9 +669,9 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 	}
 }
-/*ÅÄÕÕ¹¦ÄÜ*/
+/*ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½*/
 
-/*ÅçÈ÷¹¦ÄÜ*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 static float TankRMPercent = 100;
 float getTankRMPercent() { return TankRMPercent; }
 
@@ -685,6 +685,7 @@ bool setPump1(float percent)
 	AuxFuncsConfig aux_configs;
 	ReadParamGroup("AuxCfg", (uint64_t *)&aux_configs, 0);
 
+	uint8_t chCount = 0;
 	uint8_t MainMotorCount = get_MainMotorCount();
 	for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 	{
@@ -692,10 +693,10 @@ bool setPump1(float percent)
 		if (aux_cfg >= 525 && aux_cfg <= 548)
 		{
 			GimbalCtrl_LockedAtt[i] = percent;
-			return true;
+			++chCount;
 		}
 	}
-	return false;
+	return chCount != 0;
 }
 
 bool setPump1bySpeed(float sp)
@@ -708,6 +709,7 @@ bool setPump1bySpeed(float sp)
 	AuxFuncsConfig aux_configs;
 	ReadParamGroup("AuxCfg", (uint64_t *)&aux_configs, 0);
 
+	uint8_t chCount = 0;
 	uint8_t MainMotorCount = get_MainMotorCount();
 	for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 	{
@@ -716,12 +718,12 @@ bool setPump1bySpeed(float sp)
 		{
 			float percent = constrain(sp * aux_configs.Aux_Pump1Sp[0], 0.0f, 100.0f);
 			GimbalCtrl_LockedAtt[i] = percent;
-			return true;
+			++chCount;
 		}
 	}
-	return false;
+	return chCount != 0;
 }
-/*ÅçÈ÷¹¦ÄÜ*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 
 bool setAuxPWM(float PWMus, uint8_t ind)
 {
@@ -746,7 +748,7 @@ void init_process_AuxFuncs()
 	//	Receiver rc;
 	//	if( getReceiver(&rc) )
 	//	{
-	//		//¸´Î»±£´æÖ®Ç°Í¨µÀ
+	//		//ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ö®Ç°Í¨ï¿½ï¿½
 	//		for( uint8_t i = 0; i < rc.raw_available_channels; ++i )
 	//			last_Channel_values[i] = rc.raw_data[i];
 	//		for( uint8_t i = rc.raw_available_channels; i < 16; ++i )
@@ -754,11 +756,11 @@ void init_process_AuxFuncs()
 	//	}
 	//	else
 	//	{
-	// ¸´Î»±£´æÖ®Ç°Í¨µÀ
+	// ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ö®Ç°Í¨ï¿½ï¿½
 	for (uint8_t i = 0; i < 16; ++i)
 		last_Channel_values[i] = -200;
 	//	}
-	// ¸´Î»ÔË¶¯×Ô¶¯¿ØÖÆ±êÖ¾
+	// ï¿½ï¿½Î»ï¿½Ë¶ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½Æ±ï¿½Ö¾
 	for (uint8_t i = 0; i < 16; ++i)
 	{
 		channelTemp1[i] = 0;
@@ -782,38 +784,61 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		float aux_param1 = ((float *)&aux_configs.Aux1Param1)[i * 2];
 		float aux_param2 = ((float *)&aux_configs.Aux1Param2)[i * 2];
 		if (aux_cfg == 0)
-		{ // ÎÞ¹¦ÄÜ(¿ÉÍ¨¹ýÖ¸Áî¿ØÖÆPWMÊä³ö)
+		{ // ï¿½Þ¹ï¿½ï¿½ï¿½(ï¿½ï¿½Í¨ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½PWMï¿½ï¿½ï¿½)
 			if (GimbalCtrl_LockedAtt[i] < 100000)
 				Aux_PWM_Out((GimbalCtrl_LockedAtt[i] - 1000) * 0.1, i);
 		}
 		if (aux_cfg >= 1 && aux_cfg <= 16)
-		{ // Ó³ÉäÒ£¿ØÆ÷Í¨µÀ
-			if (GimbalCtrl_LockedAtt[i] < 100000)
-				Aux_PWM_Out((GimbalCtrl_LockedAtt[i] - 1000) * 0.1, i);
-			uint8_t ref_chan = aux_cfg - 1;
-			if (rc->connected && rc->raw_available_channels > ref_chan)
+		{ // Ó³ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½
+			bool stLocked = false;
+			uint8_t stLock_chan = aux_configs.stLockParam[0] >> 24;
+			if (stLock_chan)
 			{
-				if (fabs(GimbalCtrl_LockedAtt[i]) < 100000 && last_Channel_values[i] > -100)
-				{ // Aux×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûAux
-					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
-					{
-						Aux_PWM_Out((rc->raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
-						last_Channel_values[i] = rc->raw_data[ref_chan];
-						GimbalCtrl_LockedAtt[i] = 200000;
-					}
+				if (rc->raw_available_channels >= stLock_chan)
+				{
+					float chan = rc->raw_data[stLock_chan - 1];
+					if (chan > 68)
+						stLocked = true;
 				}
-				else
-				{ // AuxÊÖ¶¯¿ØÖÆ
-					Aux_PWM_Out((rc->raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
-					last_Channel_values[i] = rc->raw_data[ref_chan];
+			}
+
+			if (stLocked)
+			{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+				if (aux_configs.auxCfg[0] & AUX_CFG_STLOCK_FORCEVALUE_BIT)
+				{
+					uint32_t value = aux_configs.stLockParam[0] & 0xff;
+					Aux_PWM_Out((value - 1000) * 0.1, i);
 				}
 			}
 			else
-				last_Channel_values[i] = -200;
+			{
+				if (GimbalCtrl_LockedAtt[i] < 100000)
+					Aux_PWM_Out((GimbalCtrl_LockedAtt[i] - 1000) * 0.1, i);
+				uint8_t ref_chan = aux_cfg - 1;
+				if (rc->connected && rc->raw_available_channels > ref_chan)
+				{
+					if (fabs(GimbalCtrl_LockedAtt[i]) < 100000 && last_Channel_values[i] > -100)
+					{ // Auxï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+						// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½Aux
+						if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
+						{
+							Aux_PWM_Out((rc->raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
+							last_Channel_values[i] = rc->raw_data[ref_chan];
+							GimbalCtrl_LockedAtt[i] = 200000;
+						}
+					}
+					else
+					{ // Auxï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
+						Aux_PWM_Out((rc->raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
+						last_Channel_values[i] = rc->raw_data[ref_chan];
+					}
+				}
+				else
+					last_Channel_values[i] = -200;
+			}
 		}
 		else if (aux_cfg >= 501 && aux_cfg <= 516)
-		{ // Ó³ÉäÒ£¿ØÆ÷Í¨µÀ£¨¿ª¹ØÁ¿£©
+		{ // Ó³ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			uint8_t ref_chan = aux_cfg - 501;
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
@@ -834,20 +859,20 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 		if (aux_cfg >= 525 && aux_cfg <= 548)
-		{ // ¿ØÖÆË®±Ã
+		{ // ï¿½ï¿½ï¿½ï¿½Ë®ï¿½ï¿½
 			double max = (aux_configs.Aux_Pump1Max[0] - 1000) * 0.1;
 			double min = (aux_configs.Aux_Pump1Min[0] - 1000) * 0.1;
 			double st = (aux_configs.Aux_Pump1St[0] - 1000) * 0.1;
 			double scale = (max - st) / 100.0;
 			if (GimbalCtrl_LockedAtt[i] < 200)
-			{ // ×Ô¶¯¿ØÖÆË®±Ã
+			{ // ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Ë®ï¿½ï¿½
 				if (GimbalCtrl_LockedAtt[i] > -20 && GimbalCtrl_LockedAtt[i] < 120)
 				{
 					float out = constrain(GimbalCtrl_LockedAtt[i], 0.0f, 100.0f);
 					Aux_PWM_Out(out * scale + st, i);
 				}
 				else
-				{ // ¹Ø±ÕË®±Ã
+				{ // ï¿½Ø±ï¿½Ë®ï¿½ï¿½
 					Aux_PWM_Out(min, i);
 				}
 			}
@@ -856,7 +881,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // Ë®±ÃÊÖ¶¯¿ØÖÆ
+				{ // Ë®ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float out = (rc->raw_data[ref_chan] - 50.0) * aux_param1 + aux_param2;
 					out = constrain(out, 0.0f, 100.0f);
 					float deadZone = 15;
@@ -867,17 +892,17 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅºÅ
-					// ¹Ø±ÕË®±Ã
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
+					// ï¿½Ø±ï¿½Ë®ï¿½ï¿½
 					Aux_PWM_Out(min, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 25 && aux_cfg <= 48)
-		{ // ÓÃÒ£¿ØÆ÷¶ÔÓ¦Í¨µÀ½øÐÐÏà»ú¿ìÃÅ´¥·¢(raw_data)
+		{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å´ï¿½ï¿½ï¿½(raw_data)
 			if (xSemaphoreTakeRecursive(CamMutex, 0))
 			{
 				if (camPhotoAsyncStep == 0)
@@ -888,7 +913,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 						if (last_Channel_values[i] > -100)
 						{
 							if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 15)
-							{ // ´¥·¢Ïà»ú
+							{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 								if (last_Channel_values[i] > -100)
 								{
 									AuxCamTakePhoto();
@@ -899,13 +924,13 @@ void process_AuxFuncs(const Receiver *rc, double h)
 								Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						}
 						else
-						{ // ¾ÉÍ¨µÀÊý¾Ý²»¿ÉÓÃ
+						{ // ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½ï¿½ï¿½
 							Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 							last_Channel_values[i] = rc->raw_data[ref_chan];
 						}
 					}
 					else
-					{ // ÎÞÒ£¿ØÆ÷
+					{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½
 						Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						last_Channel_values[i] = -200;
 					}
@@ -914,7 +939,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 		else if (aux_cfg >= 49 && aux_cfg <= 72)
-		{ // ÓÃÒ£¿ØÆ÷¶ÔÓ¦Í¨µÀ½øÐÐÎÞË¢ÔÆÌ¨¸©Ñö¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¢ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			double angle90 = (aux_configs.Aux_BsYTPit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_BsYTPit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -925,8 +950,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ÔÆÌ¨×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûÔÆÌ¨
+				{ // ï¿½ï¿½Ì¨ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -937,7 +962,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ÔÆÌ¨ÊÖ¶¯¿ØÖÆ
+				{ // ï¿½ï¿½Ì¨ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
@@ -945,18 +970,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅºÅ
-					// Ëø¶¨0½Ç¶È
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
+					// ï¿½ï¿½ï¿½ï¿½0ï¿½Ç¶ï¿½
 					float angle = 0;
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 73 && aux_cfg <= 96)
-		{ // ÓÃÒ£¿ØÆ÷¶ÔÓ¦Í¨µÀ½øÐÐ¶æ»úÔÆÌ¨¸©Ñö¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			double angle90 = (aux_configs.Aux_StYTPit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_StYTPit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -970,8 +995,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ÔÆÌ¨×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûÔÆÌ¨
+				{ // ï¿½ï¿½Ì¨ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -983,7 +1008,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ÔÆÌ¨ÊÖ¶¯¿ØÖÆ
+				{ // ï¿½ï¿½Ì¨ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle -= pitch;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
@@ -992,18 +1017,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅºÅ
-					// Ëø¶¨0½Ç¶È
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
+					// ï¿½ï¿½ï¿½ï¿½0ï¿½Ç¶ï¿½
 					float angle = 0;
 					Aux_PWM_Out((angle - pitch - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 273 && aux_cfg <= 296)
-		{ // ÓÃÒ£¿ØÆ÷¶ÔÓ¦Í¨µÀ½øÐÐ¶æ»úÔÆÌ¨2¸©Ñö¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ì¨2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			double angle90 = (aux_configs.Aux_StYT2Pit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_StYT2Pit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -1017,8 +1042,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ÔÆÌ¨×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûÔÆÌ¨
+				{ // ï¿½ï¿½Ì¨ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -1030,7 +1055,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ÔÆÌ¨ÊÖ¶¯¿ØÖÆ
+				{ // ï¿½ï¿½Ì¨ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle -= pitch;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
@@ -1039,18 +1064,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅºÅ
-					// Ëø¶¨0½Ç¶È
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
+					// ï¿½ï¿½ï¿½ï¿½0ï¿½Ç¶ï¿½
 					float angle = 0;
 					Aux_PWM_Out((angle - pitch - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 97 && aux_cfg <= 120)
-		{ // ÓÃÒ£¿ØÆ÷¶ÔÓ¦Í¨µÀ½øÐÐ¶æ»úÔÆÌ¨ºá¹ö¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			double angleN45 = (aux_configs.Aux_StYTRolN45[0] - 1000) * 0.1;
 			double angleP45 = (aux_configs.Aux_StYTRolP45[0] - 1000) * 0.1;
 			double angle0 = (angleN45 + angleP45) / 2;
@@ -1065,8 +1090,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ÔÆÌ¨×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûÔÆÌ¨
+				{ // ï¿½ï¿½Ì¨ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
@@ -1078,7 +1103,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ÔÆÌ¨ÊÖ¶¯¿ØÖÆ
+				{ // ï¿½ï¿½Ì¨ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
 					angle -= roll;
 					angle = constrain(angle, aux_configs.Aux_YTRollMax[0]);
@@ -1087,20 +1112,20 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÆ÷ÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅºÅ
-					// Ëø¶¨0½Ç¶È
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
+					// ï¿½ï¿½ï¿½ï¿½0ï¿½Ç¶ï¿½
 					float angle = 0;
 					Aux_PWM_Out((angle - roll - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 121 && aux_cfg <= 137)
-		{ // Êý×ÖÔÆÌ¨¿ØÖÆ£¬ÔÚÏß³ÌÖÐ´¦Àí£¬ÇëÎðÉ¾³ý
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½ß³ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½
 		}
 		else if (aux_cfg >= 173 && aux_cfg <= 196)
-		{ // ÓÃÒ£¿ØÆ÷¶ÔÓ¦Í¨µÀ½øÐÐ¶æ»úÔÆÌ¨¸©ÑöÍù¸´¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			double angle90 = (aux_configs.Aux_StYTPit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_StYTPit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -1134,7 +1159,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			Aux_PWM_Out((*currentAngle) * scale + angle0, i);
 		}
 		else if (aux_cfg >= 197 && aux_cfg <= 220)
-		{ // ÓÃÒ£¿ØÆ÷¶ÔÓ¦Í¨µÀ½øÐÐ¶æ»úÔÆÌ¨ºá¹öÍù¸´¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			double angleN45 = (aux_configs.Aux_StYTRolN45[0] - 1000) * 0.1;
 			double angleP45 = (aux_configs.Aux_StYTRolP45[0] - 1000) * 0.1;
 			double angle0 = (angleN45 + angleP45) / 2;
@@ -1171,20 +1196,20 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		}
 
 		else if (aux_cfg == 950)
-		{ // ¶ÏÒ©¿ª¹Ø
+		{ // ï¿½ï¿½Ò©ï¿½ï¿½ï¿½ï¿½
 			bool chanValue;
 			Aux_ChannelRead(i, &chanValue);
 			if (aux_param1 < 0)
 				chanValue = !chanValue;
 			if (chanValue && last_Channel_values[i] >= 0)
-			{ // ¶ÏÒ©¿ª¹Ø´¥·¢
+			{ // ï¿½ï¿½Ò©ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ï¿½
 				if (last_Channel_values[i] > 50)
 					TankRMPercent = -20;
 				else
 					last_Channel_values[i] += 1;
 			}
 			else if (chanValue == false && last_Channel_values[i] <= 0)
-			{ // ¶ÏÒ©¿ª¹ØÎ´´¥·¢
+			{ // ï¿½ï¿½Ò©ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½
 				if (last_Channel_values[i] < -50)
 				{
 					if (TankRMPercent <= 0)
@@ -1198,7 +1223,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		}
 
 		else if (aux_cfg >= 1001 && aux_cfg <= 1016)
-		{ // Ó³ÉäÐéÄâÒ¡¸ËÍ¨µÀ
+		{ // Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¡ï¿½ï¿½Í¨ï¿½ï¿½
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1208,8 +1233,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 100000 && last_Channel_values[i] > -100)
-				{ // Aux×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûAux
+				{ // Auxï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½Aux
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						Aux_PWM_Out((jrc.raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
@@ -1218,7 +1243,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // AuxÊÖ¶¯¿ØÖÆ
+				{ // Auxï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					Aux_PWM_Out((jrc.raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
 					last_Channel_values[i] = jrc.raw_data[ref_chan];
 				}
@@ -1227,7 +1252,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				last_Channel_values[i] = -200;
 		}
 		else if (aux_cfg >= 1025 && aux_cfg <= 1048)
-		{ // ÓÃÐéÄâÒ¡¸Ë¶ÔÓ¦Í¨µÀ½øÐÐÏà»ú¿ìÃÅ´¥·¢(raw_data)
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¡ï¿½Ë¶ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å´ï¿½ï¿½ï¿½(raw_data)
 			if (xSemaphoreTakeRecursive(CamMutex, 0))
 			{
 				if (camPhotoAsyncStep == 0)
@@ -1241,7 +1266,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 						if (last_Channel_values[i] > -100)
 						{
 							if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 15)
-							{ // ´¥·¢Ïà»ú
+							{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 								if (last_Channel_values[i] > -100)
 								{
 									AuxCamTakePhoto();
@@ -1252,13 +1277,13 @@ void process_AuxFuncs(const Receiver *rc, double h)
 								Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						}
 						else
-						{ // ¾ÉÍ¨µÀÊý¾Ý²»¿ÉÓÃ
+						{ // ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½ï¿½ï¿½
 							Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 							last_Channel_values[i] = jrc.raw_data[ref_chan];
 						}
 					}
 					else
-					{ // ÎÞÒ£¿ØÆ÷
+					{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½
 						Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						last_Channel_values[i] = -200;
 					}
@@ -1267,7 +1292,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 		else if (aux_cfg >= 1049 && aux_cfg <= 1072)
-		{ // ÓÃÐéÄâÒ¡¸Ë¶ÔÓ¦Í¨µÀ½øÐÐÎÞË¢ÔÆÌ¨¸©Ñö¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¡ï¿½Ë¶ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¢ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1281,8 +1306,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ÔÆÌ¨×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûÔÆÌ¨
+				{ // ï¿½ï¿½Ì¨ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -1293,7 +1318,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ÔÆÌ¨ÊÖ¶¯¿ØÖÆ
+				{ // ï¿½ï¿½Ì¨ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
@@ -1301,18 +1326,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅ…·
-					// Ëø¶¨0½Ç¶È
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Å…ï¿½
+					// ï¿½ï¿½ï¿½ï¿½0ï¿½Ç¶ï¿½
 					float angle = 0;
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 1073 && aux_cfg <= 1096)
-		{ // ÓÃÐéÄâÒ¡¸Ë¶ÔÓ¦Í¨µÀ½øÐÐ¶æ»úÔÆÌ¨¸©Ñö¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¡ï¿½Ë¶ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1329,8 +1354,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ÔÆÌ¨×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûÔÆÌ¨
+				{ // ï¿½ï¿½Ì¨ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -1342,7 +1367,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ÔÆÌ¨ÊÖ¶¯¿ØÖÆ
+				{ // ï¿½ï¿½Ì¨ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle -= pitch;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
@@ -1351,18 +1376,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Åºï¿½
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅ…·
-					// Ëø¶¨0½Ç¶È
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Å…ï¿½
+					// ï¿½ï¿½ï¿½ï¿½0ï¿½Ç¶ï¿½
 					float angle = 0;
 					Aux_PWM_Out((angle - pitch - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 1097 && aux_cfg <= 1120)
-		{ // ÓÃÐéÄâÒ¡¸Ë¶ÔÓ¦Í¨µÀ½øÐÐ¶æ»úÔÆÌ¨ºá¹ö¿ØÖÆ(raw_data)
+		{ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¡ï¿½Ë¶ï¿½Ó¦Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(raw_data)
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1380,8 +1405,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ÔÆÌ¨×Ô¶¯¿ØÖÆ
-					// Í¨µÀ±ä»¯´óÓÚãÐÖµ²Åµ÷ÕûÔÆÌ¨
+				{ // ï¿½ï¿½Ì¨ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+					// Í¨ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (jrc.raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
@@ -1393,7 +1418,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ÔÆÌ¨ÊÖ¶¯¿ØÖÆ
+				{ // ï¿½ï¿½Ì¨ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 					float angle = (jrc.raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
 					angle -= roll;
 					angle = constrain(angle, aux_configs.Aux_YTRollMax[0]);
@@ -1402,10 +1427,10 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ÎÞÒ£¿ØÆ÷ÐÅºÅ
+			{ // ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ·Ç×Ô¶¯¿ØÖÆÇÒÎÞÒ£¿ØÐÅ…·
-					// Ëø¶¨0½Ç¶È
+				{ // ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½Å…ï¿½
+					// ï¿½ï¿½ï¿½ï¿½0ï¿½Ç¶ï¿½
 					float angle = 0;
 					Aux_PWM_Out((angle - roll - 0) * scale + angle0, i);
 				}
@@ -1413,50 +1438,50 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		}
 	}
 
-	//	/*Êý×ÖÔÆÌ¨½Ó¿Ú*/
+	//	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½Ó¿ï¿½*/
 	//		for( uint8_t i = 0; i < 8; ++i )
-	//		{	//ºá¹ö ¸©Ñö Æ«º½ ±ä??
-	//			//Ä£Ê½ ¾Û½¹ ÅÄÕÕÂ¼Ïñ ¹éÎ»
+	//		{	//ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Æ«ï¿½ï¿½ ï¿½ï¿½??
+	//			//Ä£Ê½ ï¿½Û½ï¿½ ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ ï¿½ï¿½Î»
 	//			uint16_t aux_cfg = ((uint16_t*)&aux_configs.DgYTRFunc)[i*4];
 	//			float aux_param1 = ((float*)&aux_configs.DgYTRParam1)[i*2];
 	//			float aux_param2 = ((float*)&aux_configs.DgYTRParam2)[i*2];
 	//
 	//			if( aux_cfg>=1 && aux_cfg<=16 )
-	//			{	//Ò£¿ØÆ÷Í¨µÀ¿ØÖÆ½Ç¶È
+	//			{	//Ò£ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Æ½Ç¶ï¿½
 	//				if( rc->connected )
 	//				{
 	//					uint8_t ref_chan = aux_cfg - 1;
 	//					if( rc->raw_available_channels > ref_chan )
 	//					{
 	//						float value;
-	//						if( i == DgYTZoom )	//Ëõ·ÅÍ¨µÀÌØÊâ´¦Àí
+	//						if( i == DgYTZoom )	//ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½â´¦ï¿½ï¿½
 	//							value = rc->raw_data[ref_chan]*0.3*aux_param1+aux_param2*0.1;
 	//						else
 	//							value = (rc->raw_data[ref_chan]-50.0)*aux_param1+aux_param2*0.1;
 	//
 	//						set_DgYTCtrl( i,
-	//							0, //0-½Ç¶ÈÄ£Ê½ 1-½ÇËÙ¶ÈÄ£Ê½
+	//							0, //0-ï¿½Ç¶ï¿½Ä£Ê½ 1-ï¿½ï¿½ï¿½Ù¶ï¿½Ä£Ê½
 	//							value,
 	//							0.1 );
 	//					}
 	//				}
 	//			}
 	//			else if( aux_cfg>=25 && aux_cfg<=48 )
-	//			{	//Ò£¿ØÆ÷Í¨µÀ¿ØÖÆ½Ç¶È
+	//			{	//Ò£ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Æ½Ç¶ï¿½
 	//				if( rc->connected )
 	//				{
 	//					uint8_t ref_chan = aux_cfg - 25;
 	//					if( rc->raw_available_channels > ref_chan )
 	//					{
 	//						set_DgYTCtrl( i,
-	//							1, //0-½Ç¶ÈÄ£Ê½ 1-½ÇËÙ¶ÈÄ£Ê½
+	//							1, //0-ï¿½Ç¶ï¿½Ä£Ê½ 1-ï¿½ï¿½ï¿½Ù¶ï¿½Ä£Ê½
 	//							(rc->raw_data[ref_chan]-50.0)*aux_param1+aux_param2*0.1,
 	//							0.1 );
 	//					}
 	//				}
 	//			}
 	//		}
-	//	/*Êý×ÖÔÆÌ¨½Ó¿Ú*/
+	//	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½Ó¿ï¿½*/
 }
 
 bool AuxGimbalSetAngle(double angle)
@@ -1470,17 +1495,17 @@ bool AuxGimbalSetAngle(double angle)
 	{
 		uint8_t aux_cfg = ((uint8_t *)&aux_configs)[i * 8];
 		if (aux_cfg >= 49 && aux_cfg <= 72)
-		{ // ÎÞË¢ÔÆÌ¨¸©Ñö??
+		{ // ï¿½ï¿½Ë¢ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½??
 			angle = constrain(angle, (double)aux_configs.Aux_YTPitMin[0], (double)aux_configs.Aux_YTPitMax[0]);
 			GimbalCtrl_LockedAtt[i] = angle;
 		}
 		else if (aux_cfg >= 73 && aux_cfg <= 96)
-		{ // ÎÞË¢ÔÆÌ¨¸©Ñö??
+		{ // ï¿½ï¿½Ë¢ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½??
 			angle = constrain(angle, (double)aux_configs.Aux_YTPitMin[0], (double)aux_configs.Aux_YTPitMax[0]);
 			GimbalCtrl_LockedAtt[i] = angle;
 		}
 		else if (aux_cfg >= 97 && aux_cfg <= 120)
-		{ // ÎÞË¢ÔÆÌ¨¸©Ñö??
+		{ // ï¿½ï¿½Ë¢ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½??
 			angle = constrain(angle, (double)aux_configs.Aux_YTRollMax[0]);
 			GimbalCtrl_LockedAtt[i] = angle;
 		}
@@ -1490,10 +1515,10 @@ bool AuxGimbalSetAngle(double angle)
 
 void init_AuxFuncs()
 {
-	// ×¢²áÏûÏ¢¶ÓÁÐ
+	// ×¢ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 	TaskQueueRegister(CAMERA_FEEDBACK_QUEUE_ID, 30);
 
-	// ×¢²áÍ¨ÐÅ²ÎÊý
+	// ×¢ï¿½ï¿½Í¨ï¿½Å²ï¿½ï¿½ï¿½
 	AuxFuncsConfig initial_cfg;
 	initial_cfg.Aux1Func[0] = 0;
 	initial_cfg.Aux2Func[0] = 0;
@@ -1510,7 +1535,7 @@ void init_AuxFuncs()
 	initial_cfg.Aux13Func[0] = 0;
 	initial_cfg.Aux14Func[0] = 0;
 
-	/* Ò£¿ØÍ¨µÀ1-16¶ÔÓ¦µÄÊý×ÖÔÆÌ¨¹¦ÄÜ */
+	/* Ò£ï¿½ï¿½Í¨ï¿½ï¿½1-16ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ */
 	initial_cfg.RcYT1Func[0] = 0;
 	initial_cfg.RcYT2Func[0] = 0;
 	initial_cfg.RcYT3Func[0] = 0;
@@ -1543,7 +1568,7 @@ void init_AuxFuncs()
 	initial_cfg.Aux13Param1[0] = 1;
 	initial_cfg.Aux14Param1[0] = 1;
 
-	/* Ò£¿ØÍ¨µÀ1-16¶ÔÓ¦µÄÊý×ÖÔÆÌ¨²ÎÊý1 */
+	/* Ò£ï¿½ï¿½Í¨ï¿½ï¿½1-16ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½1 */
 	initial_cfg.RcYT1Param1[0] = 1;
 	initial_cfg.RcYT2Param1[0] = 1;
 	initial_cfg.RcYT3Param1[0] = 1;
@@ -1576,7 +1601,7 @@ void init_AuxFuncs()
 	initial_cfg.Aux13Param2[0] = 0;
 	initial_cfg.Aux14Param2[0] = 0;
 
-	/* Ò£¿ØÍ¨µÀ1-16¶ÔÓ¦µÄÊý×ÖÔÆÌ¨²ÎÊý2 */
+	/* Ò£ï¿½ï¿½Í¨ï¿½ï¿½1-16ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½2 */
 	initial_cfg.RcYT1Param2[0] = 1;
 	initial_cfg.RcYT2Param2[0] = 1;
 	initial_cfg.RcYT3Param2[0] = 1;
@@ -1593,6 +1618,9 @@ void init_AuxFuncs()
 	initial_cfg.RcYT14Param2[0] = 1;
 	initial_cfg.RcYT15Param2[0] = 1;
 	initial_cfg.RcYT16Param2[0] = 1;
+
+	initial_cfg.auxCfg[0] = 0;
+	initial_cfg.stLockParam[0] = 1000;
 
 	initial_cfg.Aux_YTSurveyPic[0] = 0;
 	initial_cfg.Aux_CamOnPwm[0] = 2000;
@@ -1711,7 +1739,10 @@ void init_AuxFuncs()
 		MAV_PARAM_TYPE_REAL32,
 		MAV_PARAM_TYPE_REAL32, // RcYT16Param2
 
-		MAV_PARAM_TYPE_UINT8,
+		MAV_PARAM_TYPE_UINT32, // auxCfg
+		MAV_PARAM_TYPE_UINT32,
+
+		MAV_PARAM_TYPE_UINT8, // Aux_YTSurveyPic
 		MAV_PARAM_TYPE_UINT16,
 		MAV_PARAM_TYPE_UINT16,
 		MAV_PARAM_TYPE_REAL32,
@@ -1824,11 +1855,14 @@ void init_AuxFuncs()
 		"Aux_RcYT15Param2",
 		"Aux_RcYT16Param2",
 
-		"Aux_YTSurveyPic", // Êý×ÖÔÆÌ¨ÊÇ·ñÐèÔÚ²â»æÈÎÎñ¹ý³ÌÖÐÅÄÕÕ
-		"Aux_CamOnPwm",	   // ÅÄÕÕ¿ª
-		"Aux_CamOffPwm",   // ÅÄÕÕ¹Ø
-		"Aux_CamShTime",   // ÅÄÕÕ³ÖÐøÊ±¼ä
-		"Aux_CamTrigEna",  // ÈÈÑ¥´¥·¢Ê¹ÄÜ
+		"Aux_cfg",
+		"Aux_stLockParam",
+
+		"Aux_YTSurveyPic", // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		"Aux_CamOnPwm",	   // ï¿½ï¿½ï¿½Õ¿ï¿½
+		"Aux_CamOffPwm",   // ï¿½ï¿½ï¿½Õ¹ï¿½
+		"Aux_CamShTime",   // ï¿½ï¿½ï¿½Õ³ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+		"Aux_CamTrigEna",  // ï¿½ï¿½Ñ¥ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
 		"Aux_BsYTPit0",
 		"Aux_BsYTPit90",
 		"Aux_StYTPit0",

@@ -17,6 +17,7 @@
 #include "Fences.hpp"
 #include "ControlSystem.hpp"
 #include "AuxFuncs.hpp"
+
 #include "debug.hpp"
 
 #if 1 // 如果没有这段，则需要在target选项中选择使用USE microLIB
@@ -48,7 +49,7 @@ extern "C"
 #endif
 
 // 固件版本
-#define Firmware_Version 117.71
+#define Firmware_Version 117.795
 uint32_t version __attribute__((section(".ARM.__AT_0x08040000"))) = Firmware_Version * 1000;
 
 volatile bool ESC_Calib_Completed = false;

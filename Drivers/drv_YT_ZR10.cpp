@@ -81,6 +81,8 @@ static void YT_ZR10_Server(void *pvParameters)
 			attPack.rol = +quat.getRoll();
 			attPack.pit = -quat.getPitch();
 			attPack.yaw = -quat.getYaw();
+			if (attPack.yaw < 0)
+				attPack.yaw += 2 * Pi;
 			vector3<double> angularRate;
 			get_AngularRate_Ctrl(&angularRate);
 			attPack.rolRate = +angularRate.x;

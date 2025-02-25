@@ -16,8 +16,8 @@ struct DriverInfo
 typedef struct
 {
 	uint16_t header;
-	uint16_t Dist;	   // Dist¾àÀë£¨30-1200cm£©
-	uint16_t Strength; // StrengthÐÅºÅÇ¿¶È£¨20-2000¿ÉÐÅ£©
+	uint16_t Dist;	   // Distï¿½ï¿½ï¿½ë£¨30-1200cmï¿½ï¿½
+	uint16_t Strength; // Strengthï¿½Åºï¿½Ç¿ï¿½È£ï¿½20-2000ï¿½ï¿½ï¿½Å£ï¿½
 	uint16_t temp;
 	uint8_t checksum;
 } __PACKED _TfMini;
@@ -53,11 +53,11 @@ reTry:
 			{
 				vector3<double> position;
 				position.z = data->Dist;
-				// »ñÈ¡Çã½Ç
+				// ï¿½ï¿½È¡ï¿½ï¿½ï¿½
 				Quaternion quat;
 				get_Airframe_quat(&quat);
 				double lean_cosin = quat.get_lean_angle_cosin();
-				// ¸üÐÂ
+				// ï¿½ï¿½ï¿½ï¿½
 				position.z *= lean_cosin;
 				PositionSensorUpdatePosition(SensorInd, driver_info.sensor_key, position, true);
 			}
@@ -75,15 +75,15 @@ static bool I2C_TFMini_DriverInit()
 }
 static bool I2C_TFMini_DriverRun()
 {
-	// ×¢²á´«¸ÐÆ÷
+	// ×¢ï¿½á´«ï¿½ï¿½ï¿½ï¿½
 	uint32_t sensor_key = PositionSensorRegister(SensorInd,
 												 "TFMini",
 												 Position_Sensor_Type_RangePositioning,
 												 Position_Sensor_DataType_s_z,
 												 Position_Sensor_frame_ENU,
-												 0.01, // ÑÓÊ±
-												 0,	   // xyÐÅÈÎ¶È
-												 0	   // zÐÅÈÎ¶È
+												 0.01, // ï¿½ï¿½Ê±
+												 0,	   // xyï¿½ï¿½ï¿½Î¶ï¿½
+												 0	   // zï¿½ï¿½ï¿½Î¶ï¿½
 	);
 	if (sensor_key == 0)
 		return false;

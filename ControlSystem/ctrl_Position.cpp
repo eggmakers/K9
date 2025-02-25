@@ -210,6 +210,8 @@
 				Target_tracker[2].P3 = cfg.Z_TD4P3[0];
 				Target_tracker[2].P4 = cfg.Z_TD4P4[0];
 				
+				AccZ_Err_filter.reset();
+				
 				Position_Control_reset_ZAutoSpeed();
 				
 				//读取避障参数
@@ -967,6 +969,63 @@
 					}
 					return false;
 				}
+				
+				bool Position_Control_set_TargetPosVelAccXY_SLAM_OffBoard( uint8_t slamSensorInd, double posx, double posy, double velx, double vely, double accx, double accy, double TIMEOUT )
+				{
+					if( !isvalid(posx) || !isvalid(posy) || !isvalid(velx) || !isvalid(vely) || !isvalid(accx) || !isvalid(accy) )
+						return false;
+					
+					PosSensorHealthInf2 sensor_inf;
+					if( get_PosSensorHealth_XY( &sensor_inf, slamSensorInd ) && sensor_inf.slam_sensor )
+					{
+						double x, y;
+						double yaw = sensor_inf.mp.lat0_rad + sensor_inf.mp.lon0_rad;
+						double sin_Yaw, cos_Yaw;
+						fast_sin_cos( yaw, &sin_Yaw, &cos_Yaw );
+						x = BodyHeading2ENU_x( posx , posy , sin_Yaw , cos_Yaw );
+						y = BodyHeading2ENU_y( posx , posy , sin_Yaw , cos_Yaw );
+						x -= sensor_inf.HOffset.x;
+						y -= sensor_inf.HOffset.y;
+						
+						double vx, vy;
+						vx = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						vy = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						
+						double ax, ay;
+						ax = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						ay = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						
+						return Position_Control_set_TargetPosVelAccXY_OffBoard( x, y, vx, vy, ax, ay, TIMEOUT );
+					}
+					else	//无传感器信息 或 不是slam传感器
+						return false;
+				}
+				bool Position_Control_set_TargetVelAccXY_SLAM_OffBoard( uint8_t slamSensorInd, double velx, double vely, double accx, double accy, double TIMEOUT )
+				{
+					if( !isvalid(velx) || !isvalid(vely) || !isvalid(accx) || !isvalid(accy) )
+						return false;
+					
+					PosSensorHealthInf2 sensor_inf;
+					if( get_PosSensorHealth_XY( &sensor_inf, slamSensorInd ) && sensor_inf.slam_sensor )
+					{
+						double x, y;
+						double yaw = sensor_inf.mp.lat0_rad + sensor_inf.mp.lon0_rad;
+						double sin_Yaw, cos_Yaw;
+						fast_sin_cos( yaw, &sin_Yaw, &cos_Yaw );
+						
+						double vx, vy;
+						vx = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						vy = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						
+						double ax, ay;
+						ax = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						ay = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						
+						return Position_Control_set_TargetVelAccXY_OffBoard( vx, vy, ax, ay, TIMEOUT );
+					}
+					else	//无传感器信息 或 不是slam传感器
+						return false;
+				}
 			/*XY*/
 				
 			/*Z*/
@@ -1088,6 +1147,35 @@
 						return true;
 					}
 					return false;
+				}
+				
+				bool Position_Control_set_TargetPosVelAccZ_SLAM_OffBoard( uint8_t slamSensorInd, double posz, double velz, double accz, double TIMEOUT )
+				{
+					if( !isvalid(posz) || !isvalid(velz) || !isvalid(accz) )
+						return false;
+					
+					PosSensorHealthInf1 sensor_inf;
+					if( get_PosSensorHealth_Z( &sensor_inf, slamSensorInd ) && sensor_inf.slam_sensor )
+					{
+						double z = posz - sensor_inf.HOffset;
+						
+						return Position_Control_set_TargetPosVelAccZ_OffBoard( z, velz, accz, TIMEOUT );
+					}
+					else	//无传感器信息 或 不是slam传感器
+						return false;
+				}
+				bool Position_Control_set_TargetVelAccZ_SLAM_OffBoard( uint8_t slamSensorInd, double velz, double accz, double TIMEOUT )
+				{
+					if( !isvalid(velz) || !isvalid(accz) )
+						return false;
+					
+					PosSensorHealthInf1 sensor_inf;
+					if( get_PosSensorHealth_Z( &sensor_inf, slamSensorInd ) && sensor_inf.slam_sensor )
+					{
+						return Position_Control_set_TargetVelAccZ_OffBoard( velz, accz, TIMEOUT );
+					}
+					else	//无传感器信息 或 不是slam传感器
+						return false;
 				}
 			/*Z*/
 				
@@ -1240,6 +1328,64 @@
 						return true;
 					}
 					return false;
+				}
+				
+				bool Position_Control_set_TargetPosVelAccXYZ_SLAM_OffBoard( uint8_t slamSensorInd, double posx, double posy, double posz, double velx, double vely, double velz, double accx, double accy, double accz, double TIMEOUT )
+				{
+					if( !isvalid(posx) || !isvalid(posy) || !isvalid(velx) || !isvalid(vely) || !isvalid(accx) || !isvalid(accy) )
+						return false;
+					
+					PosSensorHealthInf3 sensor_inf;
+					if( get_PosSensorHealth_XYZ( &sensor_inf, slamSensorInd ) && sensor_inf.slam_sensor )
+					{
+						double x, y;
+						double yaw = sensor_inf.mp.lat0_rad + sensor_inf.mp.lon0_rad;
+						double sin_Yaw, cos_Yaw;
+						fast_sin_cos( yaw, &sin_Yaw, &cos_Yaw );
+						x = BodyHeading2ENU_x( posx , posy , sin_Yaw , cos_Yaw );
+						y = BodyHeading2ENU_y( posx , posy , sin_Yaw , cos_Yaw );
+						x -= sensor_inf.HOffset.x;
+						y -= sensor_inf.HOffset.y;
+						double z = posz - sensor_inf.HOffset.z;
+						
+						double vx, vy;
+						vx = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						vy = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						
+						double ax, ay;
+						ax = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						ay = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						
+						return Position_Control_set_TargetPosVelAccXYZ_OffBoard( x, y, z, vx, vy, velz, ax, ay, accz, TIMEOUT );
+					}
+					else	//无传感器信息 或 不是slam传感器
+						return false;
+				}
+				bool Position_Control_set_TargetVelAccXYZ_SLAM_OffBoard( uint8_t slamSensorInd, double velx, double vely, double velz, double accx, double accy, double accz, double TIMEOUT )
+				{
+					if( !isvalid(velx) || !isvalid(vely) || !isvalid(accx) || !isvalid(accy) )
+						return false;
+					
+					PosSensorHealthInf3 sensor_inf;
+					if( get_PosSensorHealth_XYZ( &sensor_inf, slamSensorInd ) && sensor_inf.slam_sensor )
+					{
+						double x, y;
+						double yaw = sensor_inf.mp.lat0_rad + sensor_inf.mp.lon0_rad;
+						double sin_Yaw, cos_Yaw;
+						fast_sin_cos( yaw, &sin_Yaw, &cos_Yaw );
+						
+						double vx, vy;
+						vx = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						vy = BodyHeading2ENU_x( velx , vely , sin_Yaw , cos_Yaw );
+						
+						double ax, ay;
+						ax = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						ay = BodyHeading2ENU_x( accx , accy , sin_Yaw , cos_Yaw );
+						
+						return Position_Control_set_TargetVelAccXYZ_OffBoard( vx, vy, velz, ax, ay, accz, TIMEOUT );
+					}
+					else	//无传感器信息 或 不是slam传感器
+						return false;
 				}
 			/*XYZ*/
 		/*OffBoard模式*/
@@ -1877,7 +2023,7 @@
 					y = BodyHeading2ENU_y( posx , posy , sin_Yaw , cos_Yaw );
 					x -= sensor_inf.HOffset.x;
 					y -= sensor_inf.HOffset.y;
-					posz -= sensor_inf.HOffset.y;
+					posz -= sensor_inf.HOffset.z;
 					return Position_Control_set_TargetPositionXYZ( x, y, posz, vel, prestore, prestored, TIMEOUT );
 				}
 				else	//无传感器信息 或 不是slam传感器
@@ -2001,8 +2147,8 @@
 				if( LockCtrl(TIMEOUT) )
 				{
 					AutoVelXY = cfg.AutoVXY[0];
-					if( AutoVelXY > cfg.maxAutoVelXY[0] )
-						AutoVelXY = cfg.maxAutoVelXY[0];
+					if( AutoVelXY > cfg.AutoVXY[0] )
+						AutoVelXY = cfg.AutoVXY[0];
 					line_track_desired_maxv = AutoVelXY;
 					
 					UnlockCtrl();
@@ -2017,7 +2163,11 @@
 				
 				if( LockCtrl(TIMEOUT) )
 				{
-					AutoVelXY = AtVelXY;
+					if( AtVelXY > 5 )
+						AutoVelXY = AtVelXY;
+					else if( AtVelXY < 0 )
+						AutoVelXY = cfg.AutoVXY[0];
+					
 					if( AutoVelXY > cfg.maxAutoVelXY[0] )
 						AutoVelXY = cfg.maxAutoVelXY[0];
 					
@@ -2056,7 +2206,10 @@
 				
 				if( LockCtrl(TIMEOUT) )
 				{
-					AutoVelXYZ = AtVelXYZ;
+					if( AtVelXYZ > 5 )
+						AutoVelXYZ = AtVelXYZ;
+					else if( AtVelXYZ < 0 )
+						AutoVelXYZ = cfg.AutoVXYZ[0];
 					
 					UnlockCtrl();
 					return true;
@@ -3933,10 +4086,14 @@ PosCtrl_Finish:
 			get_throttle_b(&b);
 			if( force < 1 )
 				force = 1;
-			double errD_kp = 1;
-			if( cfg.ZSenseD[0]>=0 && cfg.ZSenseD[0]<=1 )
-				errD_kp = cfg.ZSenseD[0];
-			double throttle = ( force + T * ( Pa*acceleration_z_error + errD_kp*accZErrD + target_acceleration_z_1 ) )/b;
+			double errD_kp = 0;
+			if( cfg.ZSenseD[0]>=0 && cfg.ZSenseD[0]<=10 )
+				errD_kp = cfg.ZSenseD[0]*0.1;
+			
+			double leanKp = lean_cosin;
+			if( leanKp < 0.3 )
+				leanKp = 0.3;
+			double throttle = ( force + T * ( leanKp*Pa*acceleration_z_error + errD_kp*accZErrD + target_acceleration_z_1 ) )/b;
 			//double throttle = ( target_acceleration_z + Pa*T*acceleration_z_error )/b + hover_throttle;
 			//倾角补偿
 			if( lean_cosin > 0.1 )				

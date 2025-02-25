@@ -20,7 +20,9 @@ enum UAVType
 		UAVType_Rotor42_X = 20 ,	//四旋翼Double X字型
 		UAVType_Rotor62_X = 21 ,	//六旋翼Double X字型
 		
-		UAVType_Rotor6_S1 = 32 ,	//六旋翼异构
+		UAVType_Rotor62_C = 31 ,	//六旋翼Double 十字字型
+	
+		UAVType_Rotor6_S1 = 41 ,	//六旋翼异构
 	
 		UAVType_Rotor3_X = 80 ,	//三旋翼（尾舵在后）
 	/*10-99多旋翼*/
@@ -106,6 +108,14 @@ inline UAV_MTCount UAV_MainMotorCount( uint8_t type )
 		}
 		
 		case UAVType_Rotor62_X:
+		{
+			UAV_MTCount res;
+			res.MTCount = 12;
+			res.STCount = 0;
+			return res;
+		}
+		
+		case UAVType_Rotor62_C:
 		{
 			UAV_MTCount res;
 			res.MTCount = 12;
@@ -617,6 +627,8 @@ bool is_MSafeCtrl();
 		/*XY*/
 			//控制位置+速度+推力
 			bool Position_Control_set_TargetPosVelAccXY_OffBoard( double posx, double posy, double velx, double vely, double accx, double accy, double TIMEOUT=-1 );
+			//控制位置+速度+推力 SLAM坐标系下
+			bool Position_Control_set_TargetPosVelAccXY_SLAM_OffBoard( uint8_t slamSensorInd, double posx, double posy, double velx, double vely, double accx, double accy, double TIMEOUT=-1 );
 			//控制位置（经纬度）+速度+推力
 			bool Position_Control_set_TargetGlobalPosVelAccXY_OffBoard( double Lat, double Lon, double velx, double vely, double accx, double accy, double TIMEOUT=-1 );
 			//控制位置（相对当前）+速度+推力
@@ -624,11 +636,15 @@ bool is_MSafeCtrl();
 			
 			//控制速度+推力
 			bool Position_Control_set_TargetVelAccXY_OffBoard( double velx, double vely, double accx, double accy, double TIMEOUT=-1 );
+			//控制速度+推力 SLAM坐标系下
+			bool Position_Control_set_TargetVelAccXY_SLAM_OffBoard( uint8_t slamSensorInd, double velx, double vely, double accx, double accy, double TIMEOUT=-1 );
 		/*XY*/
 			
 		/*Z*/
 			//控制位置+速度+推力
 			bool Position_Control_set_TargetPosVelAccZ_OffBoard( double posz, double velz, double accz, double TIMEOUT=-1 );
+			//控制位置+速度+推力 SLAM坐标系下
+			bool Position_Control_set_TargetPosVelAccZ_SLAM_OffBoard( uint8_t slamSensorInd, double posz, double velz, double accz, double TIMEOUT=-1 );
 			//控制位置（经纬度）+速度+推力
 			bool Position_Control_set_TargetPosGlobalVelAccZ_OffBoard( double posz, double velz, double accz, double TIMEOUT=-1 );
 			//控制位置（相对当前）+速度+推力
@@ -638,11 +654,15 @@ bool is_MSafeCtrl();
 			
 			//控制速度+推力
 			bool Position_Control_set_TargetVelAccZ_OffBoard( double velz, double accz, double TIMEOUT=-1 );
+			//控制速度+推力 SLAM坐标系下
+			bool Position_Control_set_TargetVelAccZ_SLAM_OffBoard( uint8_t slamSensorInd, double velz, double accz, double TIMEOUT=-1 );
 		/*Z*/
 		
 		/*XYZ*/
 			//控制位置+速度+推力
 			bool Position_Control_set_TargetPosVelAccXYZ_OffBoard( double posx, double posy, double posz, double velx, double vely, double velz, double accx, double accy, double accz, double TIMEOUT=-1 );
+			//控制位置+速度+推力 SLAM坐标系下
+			bool Position_Control_set_TargetPosVelAccXYZ_SLAM_OffBoard( uint8_t slamSensorInd, double posx, double posy, double posz, double velx, double vely, double velz, double accx, double accy, double accz, double TIMEOUT=-1 );
 			//控制位置（经纬度 海拔）+速度+推力
 			bool Position_Control_set_TargetGlobalPosVelAccXYZ_OffBoard( double Lat, double Lon, double posz, double velx, double vely, double velz, double accx, double accy, double accz, double TIMEOUT=-1 );
 			//控制位置（经纬度 Local高度）+速度+推力
@@ -652,6 +672,8 @@ bool is_MSafeCtrl();
 			
 			//控制速度+推力
 			bool Position_Control_set_TargetVelAccXYZ_OffBoard( double velx, double vely, double velz, double accx, double accy, double accz, double TIMEOUT=-1 );
+			//控制速度+推力 SLAM坐标系下
+			bool Position_Control_set_TargetVelAccXYZ_SLAM_OffBoard( uint8_t slamSensorInd, double velx, double vely, double velz, double accx, double accy, double accz, double TIMEOUT=-1 );
 		/*XYZ*/
 	/*OffBoard模式*/
 	

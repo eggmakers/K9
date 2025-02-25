@@ -1630,7 +1630,7 @@ static int32_t NavCmd21_LAND(double freq, uint8_t frame, double params[], NavCmd
 				return -100;
 			}
 
-			if (sq(LA) + sq(LB) > sq(5))
+			if (sq(LA) + sq(LB) > sq(200))
 				Attitude_Control_set_Target_Yaw(atan2(LA, LB));
 			inf->counter1 = 1;
 			inf->counter2 = 0;

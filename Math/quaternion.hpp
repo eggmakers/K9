@@ -104,6 +104,14 @@ public:
 		this->qz = -this->qz;
 		*this = *this * Quaternion(0.70710678118654752440084436210485, 0, 0, 0.70710678118654752440084436210485);
 	}
+	void Ned2Enu()
+	{
+		*this = *this * Quaternion(0.70710678118654752440084436210485, 0, 0, -0.70710678118654752440084436210485);
+		double tqx = this->qx;
+		this->qx = this->qy;
+		this->qy = tqx;
+		this->qz = -this->qz;
+	}
 
 	// 四元数转旋转向量
 	inline vector3<double> get_Rotation_vec()

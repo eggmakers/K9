@@ -277,7 +277,7 @@
 		double r_throttle = throttle;
 		if( r_throttle < cfg.minThrottlePct )
 			r_throttle = cfg.minThrottlePct;
-		r_throttle *= lean_cosin;
+		//r_throttle *= lean_cosin;
 		throttle_u = r_throttle;
 		hover_throttle = ESO_height.get_hover_throttle();
 		
@@ -413,7 +413,7 @@
 				)
 			)
 			{
-				homeSensorsZ[currentScanSensor].trust = -1;
+				homeSensorsZ[currentScanSensor].trust = sensor.z_LTtrustD;
 				homeSensorsZ[currentScanSensor].posz = sensor.position.z;
 			}
 			else
@@ -453,7 +453,10 @@
 			CtrlM_ESO[1]->update_u(Pitch_u);
 			CtrlM_ESO[2]->update_u(Yaw_u);
 		}
-		ESO_height.update_u(throttle_u);
+		Quaternion quat;
+		get_AirframeY_quat( &quat, 0.1 );
+		double lean_cosin = quat.get_lean_angle_cosin();
+		ESO_height.update_u(throttle_u, lean_cosin);
 	}
 /*状态观测器*/	
 
@@ -1529,7 +1532,7 @@
 			else
 			{	//电机测试
 				UAV_MTCount mt_count = UAV_MainMotorCount(cfg.UAVType[0]);
-				double pwm_out[8] = {0};
+				double pwm_out[PWMChannelsCount] = {0};
 				for( uint8_t i = 0; i < mt_count.MTCount; ++i )
 				{
 					if( motorTestMt & (1<<i) )
@@ -1545,6 +1548,7 @@
 			{
 				MainMotor_PullDownAll();
 				StartCounter = 0;
+				return;
 			}
 			
 			//启动初始化
@@ -1559,7 +1563,7 @@
 							UAV_MTCount mt_count = UAV_MainMotorCount(cfg.UAVType[0]);
 							if( StartCounter < 0.3*mt_count.MTCount * CtrlRateHz )
 							{
-								double pwm_out[8] = {0};
+								double pwm_out[PWMChannelsCount] = {0};
 								for( uint8_t i = 0; i < mt_count.MTCount; ++i )
 								{
 									if( StartCounter > 0.3*i * CtrlRateHz )
@@ -1577,7 +1581,7 @@
 						
 						default:
 						{
-							double pwm_out[8] = {0};
+							double pwm_out[PWMChannelsCount] = {0};
 							UAV_MTCount mt_count = UAV_MainMotorCount(cfg.UAVType[0]);
 							for( uint8_t i = 0; i < mt_count.MTCount; ++i )
 								pwm_out[i] = cfg.STThrottle[0];
@@ -2085,6 +2089,49 @@
 			false,	//初始化时不进行控制
 			true,	//起飞前不添加扰动
 		};
+		static void MultiRotor62C_MotorControl( double output_throttle, double outRoll, double outPitch, double outYaw, bool DbgSafe )
+		{
+			double rp_out[12];
+			double PitchS = outPitch * 1.1547005383792515290182975610039f;
+			double half_outPitch = 0.5f * PitchS;			
+			rp_out[0] = -PitchS;
+			rp_out[1] = -half_outPitch+outRoll;
+			rp_out[2] = +half_outPitch+outRoll;
+			rp_out[3] = +PitchS;
+			rp_out[4] = +half_outPitch-outRoll;
+			rp_out[5] = -half_outPitch-outRoll;
+			rp_out[6] = -PitchS;
+			rp_out[7] = -half_outPitch+outRoll;
+			rp_out[8] = +half_outPitch+outRoll;
+			rp_out[9] = +PitchS;
+			rp_out[10] = +half_outPitch-outRoll;
+			rp_out[11] = -half_outPitch-outRoll;
+			double yaw_out[12];
+			yaw_out[0] = -outYaw;
+			yaw_out[1] = +outYaw;
+			yaw_out[2] = -outYaw;
+			yaw_out[3] = +outYaw;
+			yaw_out[4] = -outYaw;
+			yaw_out[5] = +outYaw;
+			yaw_out[6] = +outYaw;
+			yaw_out[7] = -outYaw;
+			yaw_out[8] = +outYaw;
+			yaw_out[9] = -outYaw;
+			yaw_out[10] = +outYaw;
+			yaw_out[11] = -outYaw;
+			MultiRotor_MotorControl( 12, output_throttle, outRoll , outPitch , outYaw, rp_out, yaw_out, DbgSafe );
+		}
+		static const UAVCtrlM MultiRotor62C_CtrlM = {
+			MultiRotor_Init,
+			MultiRotor_DeInit,
+			MultiRotor_PreArmControl,
+			MultiRotor_InitControl,
+			MultiRotor62C_MotorControl,
+			0, 0,	//横滚俯仰二阶eso
+			0, 1,	//横滚俯仰控推力导数 偏航控加速度
+			false,	//初始化时不进行控制
+			true,	//起飞前不添加扰动
+		};
 		
 		static void MultiRotor8X_MotorControl( double output_throttle, double outRoll, double outPitch, double outYaw, bool DbgSafe )
 		{
@@ -2122,9 +2169,9 @@
 		
 		static void MultiRotor6S1_MotorControl( double output_throttle, double outRoll, double outPitch, double outYaw, bool DbgSafe )
 		{
-			double rp_out[6];			
-			double RollS = outRoll * 1.732;
-			double half_outRoll = 0.5f * RollS;
+			double rp_out[6];
+			double RollS = outRoll * 1.1547005383792515290182975610039f;
+			double half_outRoll = 0.5f * RollS;			
 			rp_out[0] = -outPitch+half_outRoll;
 			rp_out[1] = RollS;
 			rp_out[2] = +outPitch+half_outRoll;
@@ -2132,12 +2179,12 @@
 			rp_out[4] = -RollS;
 			rp_out[5] = -outPitch-half_outRoll;
 			double yaw_out[6];
-			yaw_out[0] = -outYaw;
+			yaw_out[0] = -0.5*outYaw;
 			yaw_out[1] = +outYaw;
-			yaw_out[2] = -outYaw;
-			yaw_out[3] = +outYaw;
+			yaw_out[2] = -0.5*outYaw;
+			yaw_out[3] = +0.5*outYaw;
 			yaw_out[4] = -outYaw;
-			yaw_out[5] = +outYaw;
+			yaw_out[5] = +0.5*outYaw;
 			MultiRotor_MotorControl( 6, output_throttle, outRoll , outPitch , outYaw, rp_out, yaw_out, DbgSafe );
 		}
 		static const UAVCtrlM MultiRotor6S1_CtrlM = {
@@ -2246,7 +2293,7 @@
 						{	
 							if( StartCounter < 0.3*3 * CtrlRateHz )
 							{
-								double pwm_out[8] = {0};
+								double pwm_out[PWMChannelsCount] = {0};
 								for( uint8_t i = 0; i < 3; ++i )
 								{
 									if( StartCounter > 0.3*i * CtrlRateHz )
@@ -2264,7 +2311,7 @@
 						
 						default:
 						{
-							double pwm_out[8] = {0};
+							double pwm_out[PWMChannelsCount] = {0};
 							for( uint8_t i = 0; i < 3; ++i )
 								pwm_out[i] = cfg.STThrottle[0];
 							MainMotor_PWM_Out( pwm_out );
@@ -2843,7 +2890,7 @@
 						{	
 							if( StartCounter < 0.3*2 * CtrlRateHz )
 							{
-								double pwm_out[8] = {0};
+								double pwm_out[PWMChannelsCount] = {0};
 								pwm_out[2] = pwm_out[3] = 0;
 								for( uint8_t i = 0; i < 2; ++i )
 								{
@@ -2863,7 +2910,7 @@
 						
 						default:
 						{
-							double pwm_out[8] = {0};
+							double pwm_out[PWMChannelsCount] = {0};
 							pwm_out[2] = pwm_out[3] = 0;
 							for( uint8_t i = 0; i < 2; ++i )
 								pwm_out[i] = cfg.STThrottle[0];
@@ -3414,8 +3461,8 @@
 		/*028-*/	0	,
 		/*029-*/	0	,
 		/*030-*/	0	,
-		/*031-*/	0	,
-		/*032-*/	&MultiRotor6S1_CtrlM	,
+		/*031-*/	&MultiRotor62C_CtrlM	,
+		/*032-*/	0	,
 		/*033-*/	0	,
 		/*034-*/	0	,
 		/*035-*/	0	,
@@ -3424,7 +3471,7 @@
 		/*038-*/	0	,
 		/*039-*/	0	,
 		/*040-*/	0	,
-		/*041-*/	0	,
+		/*041-*/	&MultiRotor6S1_CtrlM	,
 		/*042-*/	0	,
 		/*043-*/	0	,
 		/*044-*/	0	,

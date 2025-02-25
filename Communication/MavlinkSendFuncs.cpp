@@ -172,8 +172,7 @@ static bool Msg01_SYS_STATUS(uint8_t port, mavlink_message_t *msg_sd)
 				uint16_t voltages[16];
 				memset(voltages, 0xff, sizeof(uint16_t) * 10);
 				memset(&voltages[10], 0, sizeof(uint16_t) * 4);
-				// if( batInfo.cellVoltAvailable==false || batInfo.cells>14 )
-				if (1)
+				if (batInfo.cellVoltAvailable == false /*|| batInfo.cells>14*/)
 				{ // 发送电池总压
 					float sd_volt;
 					if (batInfo.totalVoltRaw < 5)
@@ -190,37 +189,106 @@ static bool Msg01_SYS_STATUS(uint8_t port, mavlink_message_t *msg_sd)
 					*((uint32_t *)&(voltages[6])) = batInfo.totalCapacity / batInfo.stVolt * 1000;
 					// 8:循环次数
 					voltages[8] = batInfo.cycle_count;
+
+					mavlink_msg_battery_status_pack_chan(
+						get_CommulinkSysId(),  // system id
+						get_CommulinkCompId(), // component id
+						port,				   // chan
+						msg_sd,
+						i,																	// Battery ID
+						MAV_BATTERY_FUNCTION_UNKNOWN,										// Function of the battery
+						MAV_BATTERY_TYPE_UNKNOWN,											// Type (chemistry) of the battery
+						batInfo.temperature < -273 ? INT16_MAX : batInfo.temperature * 100, // Temperature of the battery
+						voltages,															// voltages [mV]
+						batInfo.totalCurrent * 100,											// current_battery [cA]
+						(batInfo.totalPowerUsage / batInfo.stVolt) * 1000,					// current_consumed [mAh]
+						batInfo.totalPowerUsage * 0.01f,									// energy_consumed [hJ]
+						batInfo.totalPercent,												// battery_remaining [%]
+						0,																	// time_remaining [s]
+						MAV_BATTERY_CHARGE_STATE_UNDEFINED,									// charge_state
+						&voltages[10],														// volt ext
+						0,																	// mode
+						0																	// bitmask
+					);
+					mavlink_msg_to_send_buffer(p->write,
+											   p->lock,
+											   p->unlock,
+											   msg_sd, 0, 0.01);
 				}
 				else
 				{ // 发送单独电池电压
-					for (uint8_t i = 0; i < batInfo.cells; ++i)
+					memset(voltages, 0xff, sizeof(uint16_t) * 14);
+					int cellsCnt = batInfo.cells <= 14 ? batInfo.cells : 14;
+					for (uint8_t i = 0; i < cellsCnt; ++i)
 						voltages[i] = batInfo.cellVolts[i] * 1000;
+
+					mavlink_msg_battery_status_pack_chan(
+						get_CommulinkSysId(),  // system id
+						get_CommulinkCompId(), // component id
+						port,				   // chan
+						msg_sd,
+						i,																	// 电池ID
+						batInfo.cycle_count,												// 循环次数
+						MAV_BATTERY_TYPE_UNKNOWN,											// 电池类型
+						batInfo.temperature < -273 ? INT16_MAX : batInfo.temperature * 100, // 电池温度
+						voltages,															// 电压 [mV]
+						batInfo.totalCurrent * 100,											// 总电流 [cA]
+						(batInfo.totalPowerUsage / batInfo.stVolt) * 1000,					// 电池消耗容量 [mAh]
+						(batInfo.totalCapacity * 1000.0) / batInfo.stVolt,					// 电池总容量[mAh]
+						batInfo.totalPercent,												// 电池剩余容量 [%]
+						0,																	// 剩余飞行时间 [s]
+						MAV_BATTERY_CHARGE_STATE_UNDEFINED,									// 充电状态
+						&voltages[10],														// 电压 [mV]
+						0,																	// mode
+						batInfo.errorFlags													// errorFlags
+					);
+					mavlink_msg_to_send_buffer(p->write,
+											   p->lock,
+											   p->unlock,
+											   msg_sd, 0, 0.01);
 				}
 
-				mavlink_msg_battery_status_pack_chan(
-					get_CommulinkSysId(),  // system id
-					get_CommulinkCompId(), // component id
-					port,				   // chan
-					msg_sd,
-					i,																	// Battery ID
-					MAV_BATTERY_FUNCTION_UNKNOWN,										// Function of the battery
-					MAV_BATTERY_TYPE_UNKNOWN,											// Type (chemistry) of the battery
-					batInfo.temperature < -273 ? INT16_MAX : batInfo.temperature * 100, // Temperature of the battery
-					voltages,															// voltages [mV]
-					batInfo.totalCurrent * 100,											// current_battery [cA]
-					(batInfo.totalPowerUsage / batInfo.stVolt) * 1000,					// current_consumed [mAh]
-					batInfo.totalPowerUsage * 0.01f,									// energy_consumed [hJ]
-					batInfo.totalPercent,												// battery_remaining [%]
-					0,																	// time_remaining [s]
-					MAV_BATTERY_CHARGE_STATE_UNDEFINED,									// charge_state
-					&voltages[10],														// volt ext
-					0,																	// mode
-					0																	// bitmask
-				);
-				mavlink_msg_to_send_buffer(p->write,
-										   p->lock,
-										   p->unlock,
-										   msg_sd, 0, 0.01);
+				// 电池串数大于14S，需要mode设置为200+后，再次发送
+				if (batInfo.cells > 14)
+				{
+					int cellsLeftToSend = batInfo.cells - 14;
+					int sendCnt = 1;
+
+					while (cellsLeftToSend > 0)
+					{
+						memset(voltages, 0xff, sizeof(uint16_t) * 14);
+						int cellsCnt = cellsLeftToSend < 14 ? cellsLeftToSend : 14;
+						for (uint8_t i = (14 * sendCnt); i < (14 * sendCnt + cellsCnt); ++i)
+							voltages[i - (14 * sendCnt)] = batInfo.cellVolts[i] * 1000;
+						cellsLeftToSend -= 14;
+
+						mavlink_msg_battery_status_pack_chan(
+							get_CommulinkSysId(),  // system id
+							get_CommulinkCompId(), // component id
+							port,				   // chan
+							msg_sd,
+							i,																	// 电池ID
+							batInfo.cycle_count,												// 循环次数
+							MAV_BATTERY_TYPE_UNKNOWN,											// 电池类型
+							batInfo.temperature < -273 ? INT16_MAX : batInfo.temperature * 100, // 电池温度
+							voltages,															// 电压 [mV]
+							batInfo.totalCurrent * 100,											// 总电流 [cA]
+							(batInfo.totalPowerUsage / batInfo.stVolt) * 1000,					// 电池消耗容量 [mAh]
+							(batInfo.totalCapacity * 1000.0) / batInfo.stVolt,					// 电池总容量[mAh]
+							batInfo.totalPercent,												// 电池剩余容量 [%]
+							0,																	// 剩余飞行时间 [s]
+							MAV_BATTERY_CHARGE_STATE_UNDEFINED,									// 充电状态
+							&voltages[10],														// 电压 [mV]
+							200 + sendCnt,														// mode
+							batInfo.errorFlags													// 错误标记
+						);
+						mavlink_msg_to_send_buffer(p->write,
+												   p->lock,
+												   p->unlock,
+												   msg_sd, 0, 0.01);
+						++sendCnt;
+					}
+				}
 			}
 		}
 	}
@@ -958,6 +1026,13 @@ static bool Msg33_GLOBAL_POSITION_INT(uint8_t port, mavlink_message_t *msg_sd)
 	vector3<double> vel;
 	get_VelocityENU_Ctrl(&vel);
 
+	Quaternion airframe_quat;
+	get_AirframeY_quat(&airframe_quat);
+	airframe_quat.Enu2Ned();
+	double heading = airframe_quat.getYaw();
+	if (heading < 0)
+		heading = 2 * Pi + heading;
+
 	mavlink_msg_global_position_int_pack_chan(
 		get_CommulinkSysId(),  // system id
 		get_CommulinkCompId(), // component id
@@ -971,7 +1046,7 @@ static bool Msg33_GLOBAL_POSITION_INT(uint8_t port, mavlink_message_t *msg_sd)
 		vel.y,							   // vel north
 		vel.x,							   // vel east
 		-vel.z,							   // vel down
-		0xffff							   // Vehicle heading
+		rad2degree(heading) * 100		   // Vehicle heading
 	);
 	return true;
 }

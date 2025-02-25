@@ -6,32 +6,32 @@
 
 struct AvoidanceCfg
 {
-	// »ú¼ÜÖá¾à(cm)
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(cm)
 	float wheelbase[2];
-	// ±ÜÕÏ²ßÂÔ
-	// bit0:±ÜÕÏÊ¹ÄÜ
-	// bit1:Ê¹ÄÜÏòÏÂ±ÜÕÏ(ÁÙ½üµØÃæ¼õËÙ)
-	// bit8:ÔÊÐíÏòÉÏÖ÷¶¯±ÜÕÏ
-	// bit9:ÔÊÐíÏò×óÖ÷¶¯±ÜÕÏ
-	// bit10:ÔÊÐíÏòÓÒÖ÷¶¯±ÜÕÏ
-	// bit11:ÔÊÐíÏòÏÂÖ÷¶¯±ÜÕÏ
-	// bit16:ÓÅÏÈÏòÉÏÖ÷¶¯±ÜÕÏ
-	// bit17:ÓÅÏÈÏò×óÖ÷¶¯±ÜÕÏ
-	// bit18:ÓÅÏÈÏòÓÒÖ÷¶¯±ÜÕÏ
-	// bit19:ÓÅÏÈÏòÏÂÖ÷¶¯±ÜÕÏ
+	// ï¿½ï¿½ï¿½Ï²ï¿½ï¿½ï¿½
+	// bit0:ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
+	// bit1:Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½ï¿½ï¿½(ï¿½Ù½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+	// bit8:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// bit9:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// bit10:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// bit11:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// bit16:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// bit17:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// bit18:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// bit19:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	uint32_t AvoidanceMode[2];
-	// ±ÜÕÏ¾àÀë£¨ÀëÕÏ°­Îï¾àÀëcm£©
+	// ï¿½ï¿½ï¿½Ï¾ï¿½ï¿½ë£¨ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½cmï¿½ï¿½
 	float AvoidanceDist[2];
 
-	// Î§À¸¿ª¹Ø
+	// Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	uint32_t fenceEnable[2];
-	// Î§À¸ÀàÐÍ
+	// Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	uint32_t fenceType[2];
-	// Î§À¸¶¯×÷
+	// Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	uint32_t fenceAction[2];
-	// Ô²ÐÎÎ§À¸°ë¾¶
+	// Ô²ï¿½ï¿½Î§ï¿½ï¿½ï¿½ë¾¶
 	float fenceRadius[2];
-	// ×î´ó×îÐ¡¸ß¶È
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ß¶ï¿½
 	float fenceMinAlt[2];
 	float fenceMaxAlt[2];
 
@@ -47,121 +47,121 @@ struct AvoidanceCfg
 
 #define AvMode_Enabled(x) (x & AvModeFlag_Ena)
 
-// ¼òµ¥Î§À¸Ê¹ÄÜ(°ë¾¶ºÍ¸ß¶È)
+// ï¿½ï¿½Î§ï¿½ï¿½Ê¹ï¿½ï¿½(ï¿½ë¾¶ï¿½Í¸ß¶ï¿½)
 #define FenceEnable_SplFenceFlag (1 << 0)
-// ¸´ÔÓÎ§À¸Ê¹ÄÜ(µØÃæÕ¾»­µÄ¸´ÔÓÎ§À¸)
+// ï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½Ê¹ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½Î§ï¿½ï¿½)
 #define FenceEnable_CpxFenceFlag (1 << 1)
 
-/*±ÜÕÏ*/
+/*ï¿½ï¿½ï¿½ï¿½*/
 enum AvTargetType
 {
-	// ÈýÎ¬µãÄ¿±ê
+	// ï¿½ï¿½Î¬ï¿½ï¿½Ä¿ï¿½ï¿½
 	AvTargetType_3dPoint = 0,
 	AvTargetType_2dPoint,
 
-	// Ë®Æ½Ö±Ïß(ÊúÖ±ÎÞÏÞ³¤Ö±ÏßÇ½ÃæÄ¿±ê)(xy+zÐ±ÂÊ)
+	// Ë®Æ½Ö±ï¿½ï¿½(ï¿½ï¿½Ö±ï¿½ï¿½ï¿½Þ³ï¿½Ö±ï¿½ï¿½Ç½ï¿½ï¿½Ä¿ï¿½ï¿½)(xy+zÐ±ï¿½ï¿½)
 	AvTargetType_XYStraightLine,
-	// Ë®Æ½Ïß¶Î(ÊúÖ±Ö±Ïß¶ÎÇ½ÃæÄ¿±ê)(pos:xy+pos2:xy)
+	// Ë®Æ½ï¿½ß¶ï¿½(ï¿½ï¿½Ö±Ö±ï¿½ß¶ï¿½Ç½ï¿½ï¿½Ä¿ï¿½ï¿½)(pos:xy+pos2:xy)
 	AvTargetType_XYLineSegment,
-	// ÈýÎ¬Ïß¶Î(pos:xyz+pos2:xyz)
+	// ï¿½ï¿½Î¬ï¿½ß¶ï¿½(pos:xyz+pos2:xyz)
 	AvTargetType_3dLineSegment,
 
-	// ZÆ½Ãæ(ÎÞÏÞ´óZÆ½ÃæÄ¿±ê)(zÎªÇ½Ãæz×ø±ê)
+	// ZÆ½ï¿½ï¿½(ï¿½ï¿½ï¿½Þ´ï¿½ZÆ½ï¿½ï¿½Ä¿ï¿½ï¿½)(zÎªÇ½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½)
 	AvTargetType_ZSurface,
 };
 struct AvoidanceTarget
 {
-	// ÊÇ·ñ×¢²á
+	// ï¿½Ç·ï¿½×¢ï¿½ï¿½
 	bool registered;
-	// ÊÇ·ñ¿ÉÓÃ
+	// ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	bool available;
-	// Ä¿±êÀàÐÍ
+	// Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	AvTargetType type;
 
-	// Ä¿±êÎ»ÖÃ
+	// Ä¿ï¿½ï¿½Î»ï¿½ï¿½
 	vector3<double> pos;
 	vector3<double> pos2;
-	// ¸üÐÂÊ±¼ä
+	// ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 	TIME last_update_TIME;
 };
 #define max_AvTargets 8
 
-// »ñÈ¡±ÜÕÏÄ¿±ê¸öÊý
+// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½
 uint8_t getAvTargetsCount();
 
-// ×¢²á±ÜÕÏÄ¿±ê
-// ·µ»Ø£º-1ÎÞ·¨×¢²á >=0±ÜÕÏÄ¿±êid
+// ×¢ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
+// ï¿½ï¿½ï¿½Ø£ï¿½-1ï¿½Þ·ï¿½×¢ï¿½ï¿½ >=0ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½id
 int8_t registere_AvTarget(double TIMEOUT = -1);
-// ×¢Ïú±ÜÕÏÄ¿±ê
+// ×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
 int8_t unregistere_AvTarget(uint8_t id, double TIMEOUT = -1);
 
-// »ñÈ¡±ÜÕÏÄ¿±êÐÅÏ¢
+// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Ï¢
 bool get_AvTarget(uint8_t id, AvoidanceTarget *resTarget, double TIMEOUT = -1);
 
-// ½«±ÜÕÏÄ¿±êÉèÎª²»¿ÉÓÃ
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 bool set_AvTargetInavailable(uint8_t id, double TIMEOUT = -1);
 
-/*ÈýÎ¬µãÄ¿±ê*/
-// ÉèÖÃ±ÜÕÏÄ¿±ê£¨Ïà¶Ôµ±Ç°ENUÎ»ÖÃ£©
+/*ï¿½ï¿½Î¬ï¿½ï¿½Ä¿ï¿½ï¿½*/
+// ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½Ä¿ï¿½ê£¨ï¿½ï¿½Ôµï¿½Ç°ENUÎ»ï¿½Ã£ï¿½
 bool set_AvTarget3dPoint_RelativeEnu(uint8_t id, vector3<double> dis, double TIMEOUT = -1);
-// ÉèÖÃ±ÜÕÏÄ¿±ê£¨Ïà¶Ôµ±Ç°FLUÎ»ÖÃ£©
+// ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½Ä¿ï¿½ê£¨ï¿½ï¿½Ôµï¿½Ç°FLUÎ»ï¿½Ã£ï¿½
 bool set_AvTargetPoint3dPoint_RelativeFlu(uint8_t id, vector3<double> dis, double TIMEOUT = -1);
-/*ÈýÎ¬µãÄ¿±ê*/
+/*ï¿½ï¿½Î¬ï¿½ï¿½Ä¿ï¿½ï¿½*/
 
-/*XYÇ½Ãæ*/
+/*XYÇ½ï¿½ï¿½*/
 bool set_AvTargetXYStraightLine_RelativeEnu(uint8_t id, vector2<double> dis, double angle, double TIMEOUT = -1);
 bool set_AvTargetXYStraightLine_RelativeFlu(uint8_t id, vector2<double> dis, double angle = 0, double TIMEOUT = -1);
-/*XYÇ½Ãæ*/
+/*XYÇ½ï¿½ï¿½*/
 
-/*»ñÈ¡ÆÚÍûËÙ¶È·½ÏòÉÏ×î½üÕÏ°­ÎïÐÅÏ¢£¨ËÙ¶ÈENUÏµ£©
-	·µ»Ø£ºtrueÇ°·½ÓÐÕÏ°­Îï falseÇ°·½ÎÞÕÏ°­Îï
-	resAvDistance£º·µ»ØµÄÇ°·½ÕÏ°­Îï¾àÀë(cm)
-		Êý×é³¤¶È±ØÐë´óÓÚoffsetsCount+1
-		0£ºÎÞÆ«ÒÆ±ÜÕÏ¼ÆËã½á¹û
-		1-offsetsCount£ºµ±Ç°Î»ÖÃÆ«ÒÆÎªtagetOffsets[i]µÄ±ÜÕÏ¼ÆËã½á¹û
-	targetVel£ºËÙ¶È·½Ïò(Ç°½ø·½Ïò)
-	inRange£º±ÜÕÏ±¾ÌåÖ±¾¶(·É»ú´óÐ¡cm)
-	tagetOffsets£ºµ±Ç°Î»ÖÃÆ«ÒÆÊý×é Æ«ÒÆ±ØÐë´¹Ö±ÓÚËÙ¶È·½Ïò Ë®Æ½ÓÚËÙ¶È·½ÏòµÄ·ÖÁ¿½«±»È¥³ý
-	offsetsCount£ºÎ»ÖÃÆ«ÒÆÊý×é³¤¶È
+/*ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ù¶ï¿½ENUÏµï¿½ï¿½
+	ï¿½ï¿½ï¿½Ø£ï¿½trueÇ°ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ falseÇ°ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½
+	resAvDistanceï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½Ç°ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(cm)
+		ï¿½ï¿½ï¿½é³¤ï¿½È±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½offsetsCount+1
+		0ï¿½ï¿½ï¿½ï¿½Æ«ï¿½Æ±ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½ï¿½ï¿½
+		1-offsetsCountï¿½ï¿½ï¿½ï¿½Ç°Î»ï¿½ï¿½Æ«ï¿½ï¿½ÎªtagetOffsets[i]ï¿½Ä±ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½ï¿½ï¿½
+	targetVelï¿½ï¿½ï¿½Ù¶È·ï¿½ï¿½ï¿½(Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+	inRangeï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ï¿½ï¿½Ö±ï¿½ï¿½(ï¿½É»ï¿½ï¿½ï¿½Ð¡cm)
+	tagetOffsetsï¿½ï¿½ï¿½ï¿½Ç°Î»ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Æ«ï¿½Æ±ï¿½ï¿½ë´¹Ö±ï¿½ï¿½ï¿½Ù¶È·ï¿½ï¿½ï¿½ Ë®Æ½ï¿½ï¿½ï¿½Ù¶È·ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¥ï¿½ï¿½
+	offsetsCountï¿½ï¿½Î»ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½ï¿½é³¤ï¿½ï¿½
 */
 bool get_AvLineDistanceEnu(double *resAvDistance, vector3<double> targetVel, double inRange, const vector3<double> *posOffsets = 0, uint8_t offsetsCount = 0, double TIMEOUT = -1);
-// »ñÈ¡ÆÚÍûËÙ¶È·½ÏòÉÏ×î½üÕÏ°­ÎïÐÅÏ¢£¨ËÙ¶ÈFLUÏµ£©
+// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ù¶ï¿½FLUÏµï¿½ï¿½
 bool get_AvLineDistanceFlu(double *resAvDistance, vector3<double> targetVel, double inRange, const vector3<double> *posOffsets = 0, uint8_t offsetsCount = 0, double TIMEOUT = -1);
-/*±ÜÕÏ*/
+/*ï¿½ï¿½ï¿½ï¿½*/
 
-/*Î§À¸*/
+/*Î§ï¿½ï¿½*/
 enum FRS
 {
-	// ²»ÔÚ¿É·ÉÐÐÇøÓòÄÚ
+	// ï¿½ï¿½ï¿½Ú¿É·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	FRS_NotInFlyZone = -1,
-	// ÔÚ½û·ÉÇøÄÚ
+	// ï¿½Ú½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	FRS_NotOuNFlyZone = -2,
-	// ÎÞÎ§À¸
+	// ï¿½ï¿½Î§ï¿½ï¿½
 	FRS_NoFence = 0,
-	// ÔÚ¿É·ÉÐÐÇøÓòÄÚ
+	// ï¿½Ú¿É·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	FRS_InFlyZone = 1,
 };
-/*¼ÆËã·É»úµ±Ç°ÊÇ·ñÔÚÎ§À¸ÄÚ
-	·µ»ØÖµ:
-		true:ÔÚÎ§À¸·¶Î§ÄÚ£¬distanceÕýÊýÎª¾àÀëÎ§À¸±ß½ç¾àÀë£¬¸ºÊýÎªÎÞÎ§À¸ÐÅÏ¢
-		false:²»ÔÚÎ§À¸·¶Î§ÄÚ£¬distance¸ºÊýÊ±±íÊ¾ËÙ¶È·½Ïò²»Ö¸Ïòµ±Ç°Î§À¸ÄÚ²¿£¬ÕýÊýÊ±±íÊ¾Ö¸ÏòÎ§À¸·¶Î§ÄÚ²¿£¬ÓëÄÚ²¿±ß½çµÄ¾àÀë
-	pos:·É»úµ±Ç°Î»ÖÃ(cm)
-	targetVel£ºËÙ¶È·½Ïò
-	distance£º·µ»ØµÄ¾àÀë±ß½ç¾àÀë(cm)
-	fenceRs£º·µ»ØµÄ±ß½ç½á¹û
+/*ï¿½ï¿½ï¿½ï¿½É»ï¿½ï¿½ï¿½Ç°ï¿½Ç·ï¿½ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½
+	ï¿½ï¿½ï¿½ï¿½Öµ:
+		true:ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Î§ï¿½Ú£ï¿½distanceï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Ï¢
+		false:ï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Î§ï¿½Ú£ï¿½distanceï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ê¾ï¿½Ù¶È·ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ç°Î§ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ê¾Ö¸ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Î§ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ß½ï¿½Ä¾ï¿½ï¿½ï¿½
+	pos:ï¿½É»ï¿½ï¿½ï¿½Ç°Î»ï¿½ï¿½(cm)
+	targetVelï¿½ï¿½ï¿½Ù¶È·ï¿½ï¿½ï¿½
+	distanceï¿½ï¿½ï¿½ï¿½ï¿½ØµÄ¾ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½ï¿½(cm)
+	fenceRsï¿½ï¿½ï¿½ï¿½ï¿½ØµÄ±ß½ï¿½ï¿½ï¿½
 */
 bool is_insideFence(const vector3<double> &pos, const vector3<double> &targetVel = vector3<double>(0, 0, 0), double *distance = 0, FRS *fenceRs = 0);
 
-/*¼ÆËã·É»úµ±Ç°ÊÇ·ñÔÚÔ²ÐÎÎ§À¸ÄÚ
-	·µ»ØÖµ:
-		true:ÔÚÎ§À¸·¶Î§ÄÚ£¬distanceÕýÊýÎª¾àÀëÎ§À¸±ß½ç¾àÀë£¬¸ºÊýÎªÎÞÎ§À¸ÐÅÏ¢
-		false:²»ÔÚÎ§À¸·¶Î§ÄÚ£¬distance¸ºÊýÊ±±íÊ¾ËÙ¶È·½Ïò²»Ö¸Ïòµ±Ç°Î§À¸ÄÚ²¿£¬ÕýÊýÊ±±íÊ¾Ö¸ÏòÎ§À¸·¶Î§ÄÚ²¿£¬ÓëÄÚ²¿±ß½çµÄ¾àÀë
-	pos:·É»úµ±Ç°Î»ÖÃ(cm)
-	targetVel£ºËÙ¶È·½Ïò
-	circleO_x:Ô²ÐÄx   circleO_y: Ô²ÐÄy   circleO_r: Ô²°ë¾¶
-	distance£º·µ»ØµÄ¾àÀë±ß½ç¾àÀë(cm)
+/*ï¿½ï¿½ï¿½ï¿½É»ï¿½ï¿½ï¿½Ç°ï¿½Ç·ï¿½ï¿½ï¿½Ô²ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½
+	ï¿½ï¿½ï¿½ï¿½Öµ:
+		true:ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Î§ï¿½Ú£ï¿½distanceï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Ï¢
+		false:ï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Î§ï¿½Ú£ï¿½distanceï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ê¾ï¿½Ù¶È·ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ç°Î§ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ê¾Ö¸ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½Î§ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ß½ï¿½Ä¾ï¿½ï¿½ï¿½
+	pos:ï¿½É»ï¿½ï¿½ï¿½Ç°Î»ï¿½ï¿½(cm)
+	targetVelï¿½ï¿½ï¿½Ù¶È·ï¿½ï¿½ï¿½
+	circleO_x:Ô²ï¿½ï¿½x   circleO_y: Ô²ï¿½ï¿½y   circleO_r: Ô²ï¿½ë¾¶
+	distanceï¿½ï¿½ï¿½ï¿½ï¿½ØµÄ¾ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½ï¿½(cm)
 */
 bool is_insideCircleFence(const vector3<double> &pos, const vector3<double> &targetVel,
 						  double circleO_x, double circleO_y, double circle_r,
 						  double *distance);
-/*Î§À¸*/
+/*Î§ï¿½ï¿½*/

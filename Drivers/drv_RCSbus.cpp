@@ -26,7 +26,7 @@ void init_drv_RCSbus()
 	RCC->APB1LENR |= (1 << 17);
 	os_delay(1e-2);
 
-	USART2->CR1 = (1 << 29) | (1 << 26) | (1 << 12) | (1 << 10) | (1 << 2);
+	USART2->CR1 = (1 << 29) | (1 << 26) | (1 << 12) | (1 << 10) | (1 << 8) | (1 << 2);
 	USART2->CR2 = (1 << 23) | (1 << 16) | (0b10 << 12); // 电平反向 2个停止位
 	USART2->CR3 = (1 << 28) | (0b011 << 25);
 	USART2->RTOR = 10;
@@ -43,6 +43,7 @@ static float rc_buf[16];
 static bool failsafe;
 static bool frameLost;
 static uint8_t fByte = 0;
+static uint8_t eByte = 0;
 extern "C" void USART2_IRQHandlerTCB(void *pvParameter1, uint32_t ulParameter2)
 {
 	//	bool unLocked;
@@ -53,7 +54,8 @@ extern "C" void USART2_IRQHandlerTCB(void *pvParameter1, uint32_t ulParameter2)
 	//		for( uint8_t i=0; i<16; ++i )
 	//			vv[i] = rc_buf[i];
 	//		vv[16] = fByte;
-	//		SDLog_Msg_DebugVect( "rc", vv, 17 );
+	//		vv[17] = eByte;
+	//		SDLog_Msg_DebugVect( "rc", vv, 18 );
 	//	}
 
 	if (!frameLost)
@@ -62,6 +64,8 @@ extern "C" void USART2_IRQHandlerTCB(void *pvParameter1, uint32_t ulParameter2)
 }
 extern "C" void USART2_IRQHandler()
 {
+	static uint8_t last_rdata = 0xff;
+
 	bool err = false;
 	if (USART2->ISR & (1 << 3))
 	{
@@ -90,7 +94,7 @@ extern "C" void USART2_IRQHandler()
 
 		if (SBUS_RC_State == 0)
 		{
-			if (rdata == 0x0f)
+			if (rdata == 0x0f && (last_rdata == 0 || (last_rdata & 0x0f) == 0x04))
 			{
 				++SBUS_RC_State;
 			}
@@ -136,5 +140,10 @@ extern "C" void USART2_IRQHandler()
 			}
 			SBUS_RC_Reset;
 		}
+
+		if (!err)
+			last_rdata = rdata;
+		else
+			last_rdata = 0xff;
 	}
 }

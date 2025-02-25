@@ -127,6 +127,15 @@ struct AuxFuncsConfig
 	float RcYT15Param2[2];
 	float RcYT16Param2[2];
 
+	// 辅助通道选项
+	// bit4: 0-舵机锁开启时舵机通道不能变化 1-舵机锁开启时强行将通道锁定到舵机锁参数值
+	uint32_t auxCfg[2];
+
+	// 舵机锁参数
+	// bit24:31-遥控器通道 为0不开启舵机锁
+	// bit0:16-舵机保持值
+	uint32_t stLockParam[2];
+
 	uint8_t Aux_YTSurveyPic[8]; // 数字云台是否需在测绘任务过程中拍照
 	uint16_t Aux_CamOnPwm[4];
 	uint16_t Aux_CamOffPwm[4];
@@ -148,6 +157,7 @@ struct AuxFuncsConfig
 	float Aux_Pump1Max[2];
 	float Aux_Pump1Sp[2];
 };
+#define AUX_CFG_STLOCK_FORCEVALUE_BIT (1 << 4)
 
 /*数字云台通道*/
 struct YTCtrl

@@ -37,6 +37,10 @@ struct PosSensorHealthInf1
 {
 	// 传感器序号
 	uint8_t sensor_ind;
+	// 是否全球定位传感器
+	bool global_sensor;
+	// 是否slam传感器
+	bool slam_sensor;
 	// 解算位置
 	vector3<double> PositionENU;
 	// 传感器位置

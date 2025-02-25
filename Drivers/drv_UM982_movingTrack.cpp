@@ -28,18 +28,18 @@ struct GpsConfig
 
 enum GPS_Scan_Operation
 {
-	// ????????????��??????????
+	// ��ָ���������·��ͳ�ʼ����Ϣ
 	GPS_Scan_Baud9600 = 9600,
 	GPS_Scan_Baud38400 = 38400,
 	GPS_Scan_Baud460800 = 460800,
 	GPS_Scan_Baud115200 = 115200,
 	GPS_Scan_Baud57600 = 57600,
 
-	// ?????????��??
+	// ����Ƿ����óɹ�
 	GPS_Check_Baud,
-	// ??????????????��???????
+	// �ڵ�ǰ���������ٴη�������
 	GPS_ResendConfig,
-	// GPS???????
+	// GPS�Ѽ�����
 	GPS_Present,
 };
 
@@ -83,7 +83,7 @@ static inline uint16_t GPS_ParseByte(GPS_State_Machine *state_machine, uint8_t *
 	frame_datas[state_machine->frame_datas_ind++] = r_data;
 	switch (state_machine->read_state)
 	{
-	case 0: // ????
+	case 0: // �Ұ�ͷ
 	{
 		if (state_machine->frame_datas_ind == 1)
 		{
@@ -113,7 +113,7 @@ static inline uint16_t GPS_ParseByte(GPS_State_Machine *state_machine, uint8_t *
 		}
 		break;
 	}
-	case 1: // ??Class ID???????
+	case 1: // ��Class ID�Ͱ�����
 	{
 		if (state_machine->frameType == 0xB5 && state_machine->frame_datas_ind == 8)
 		{
@@ -135,7 +135,7 @@ static inline uint16_t GPS_ParseByte(GPS_State_Machine *state_machine, uint8_t *
 		}
 		break;
 	}
-	case 2: // ????????
+	case 2: // ��������
 	{
 		if (state_machine->frameType == 0xB5)
 		{
@@ -155,7 +155,7 @@ static inline uint16_t GPS_ParseByte(GPS_State_Machine *state_machine, uint8_t *
 		}
 		break;
 	}
-	case 3: // ��??
+	case 3: // У��
 	{
 		if (state_machine->frame_datas_ind == state_machine->frame_datas_length)
 		{
@@ -206,85 +206,85 @@ static bool send_init_msg(DriverInfo &driver_info)
 	if (len != CmdResultLen)
 		return false;
 
-	// ????????????
+	// ������ƥ�����
 	for (uint8_t i = 0; i < 24; i++)
 	{
-		if (i == 0) // ????????????
+		if (i == 0) // ֹͣ������Ϣ���
 			len = sprintf(UM982Clr, "UNLOG COM2\r\n");
 
-		else if (i == 1) // ???????????
+		else if (i == 1) // ����վ����ģʽ
 			len = sprintf(UM982Clr, "MODE HEADING2\r\n");
 
-		else if (i == 2) // ???? RTK ???????????????????????��
+		else if (i == 2) // ���� RTK ģ��ָ�����������ڣ���Ϊ��λ
 			len = sprintf(UM982Clr, "CONFIG RTK TIMEOUT 600\r\n");
 
-		else if (i == 3) // ???????? DGPS?????????????????????��?????????????????????? DGPS ???????????????????? DGPS ??��????
+		else if (i == 3) // ���ý��յ� DGPS������ݵ�������ڣ���Ϊ��λ�����յ����ͺ���ָ�����ڵ� DGPS ������ݱ����ԣ�Ҳ���ڽ�ֹ DGPS ��λ����
 			len = sprintf(UM982Clr, "CONFIG DGPS TIMEOUT 600\r\n");
 
-		else if (i == 4) // ??????????????????????ANT1??????????ANT2????????????
+		else if (i == 4) // ����˫���߽��ջ��������ߣ�ANT1��������ߣ�ANT2��֮����뱣�̶ֹ�
 			len = sprintf(UM982Clr, "CONFIG HEADING FIXLENGTH\r\n");
 
-		else if (i == 5) // ???? EVENT ????????????��????????��?????????????????, ??��ms????��?? TGuard???????? Event ???????????: 4????��?? 2?????3,599,999
+		else if (i == 5) // ���� EVENT ���ܣ��½�����Ч��������Ч����֮������ʱ��Ҫ��, ��λms����С�� TGuard����ڶ��� Event �����ӡ�Ĭ��ֵ: 4����С�� 2�����3,599,999
 			len = sprintf(UM982Clr, "CONFIG EVENT ENABLE NEGATIVE 2\r\n");
 
-		else if (i == 6) // ???��??????��?????��????????????????? 5km ????????????????????????��????
+		else if (i == 6) // ���ùرյ�Ƶ��λ״̬���ж����������߳��ȳ��� 5km ʱ����������������Ȼ����ʹ�ù̶���
 			len = sprintf(UM982Clr, "CONFIG SFRTK Enable\r\n");
 
-		else if (i == 7) // ?? BDS ??????? B1C&B2a ?????? RTCM ��??
+		else if (i == 7) // �� BDS ϵͳ���ǵ� B1C&B2a �źű��� RTCM Э��
 			len = sprintf(UM982Clr, "CONFIG RTCMB1CB2a Enable\r\n");
 
-		else if (i == 8) // ??????????? GPS ?????
+		else if (i == 8) // ʹ�ܽ��ջ����� GPS ����ϵ
 			len = sprintf(UM982Clr, "UNMASK GPS\r\n");
 
-		else if (i == 9) // ??????????? BDS ??????
+		else if (i == 9) // ʹ�ܽ��ջ����� BDS ����ϵͳ
 			len = sprintf(UM982Clr, "UNMASK BDS\r\n");
 
-		else if (i == 10) // ??????????? GLO ??????
+		else if (i == 10) // ʹ�ܽ��ջ����� GLO ����ϵͳ
 			len = sprintf(UM982Clr, "UNMASK GLO\r\n");
 
-		else if (i == 11) // ??????????? GAL ??????
+		else if (i == 11) // ʹ�ܽ��ջ����� GAL ����ϵͳ
 			len = sprintf(UM982Clr, "UNMASK GAL\r\n");
 
-		else if (i == 12) // ??????????? QZSS ??????
+		else if (i == 12) // ʹ�ܽ��ջ����� QZSS ����ϵͳ
 			len = sprintf(UM982Clr, "UNMASK QZSS\r\n");
 
-		else if (i == 13) // ??? EVENT ????????????????��??????
+		else if (i == 13) // ��� EVENT ����ʱ�̵ľ�ȷ����ʱ�估���ʱ��
 			len = sprintf(UM982Clr, "LOG EVENTMARKB ONCHANGED\r\n");
 
-		else if (i == 14) // ??????????????????????????
+		else if (i == 14) // ���ý��ջ��������ǵ����ǽ�ֹ�Ƕ�
 			len = sprintf(UM982Clr, "MASK 10\r\n");
 
-		else if (i == 15) // ????????????????
+		else if (i == 15) // ���ջ�Ĭ����Ϊ��̬ģʽ
 			len = sprintf(UM982Clr, "RTKDYNAMICS DYNAMIC\r\n");
 
-		else if (i == 16) // ?????????????
+		else if (i == 16) // ���ջ��˶��ĺ���
 			len = sprintf(UM982Clr, "UNIHEADINGB 0.1\r\n");
 
-		else if (i == 17) // UTC ???
+		else if (i == 17) // UTC ʱ��
 			len = sprintf(UM982Clr, "LOG TIMEB ONTIME 0.1\r\n");
 
-		else if (i == 18) // ???????????
+		else if (i == 18) // ����������Ϣ
 			len = sprintf(UM982Clr, "STADOPB 1\r\n");
 
-		//		else if (i==19)// ????????????
+		//		else if (i==19)// ԭʼ�۲�������Ϣ
 		//			len = sprintf( UM982Clr,  "LOG COM1 RANGEB ONTIME 0.1\r\n");
 		//
-		//		else if (i==20)// GLONASS ????????
+		//		else if (i==20)// GLONASS ��������
 		//			len = sprintf( UM982Clr,  "LOG COM1 GLORAWSTRINGB ONCHANGED\r\n");
 
-		//		else if (i==21)// GPS ????????
+		//		else if (i==21)// GPS ��������
 		//			len = sprintf( UM982Clr,  "LOG COM1 RAWGPSSUBFRAMEB ONCHANGED\r\n");
 		//
-		//		else if (i==22)// BDS ????????
+		//		else if (i==22)// BDS ��������
 		//			len = sprintf( UM982Clr,  "LOG COM1 BDSRAWNAVSUBFRAMEB ONCHANGED\r\n");
 
-		//		else if (i==23)// QZSS ????????
+		//		else if (i==23)// QZSS ��������
 		//			len = sprintf( UM982Clr,  "LOG COM1 QZSSRAWSUBFRAMEB ONCHANGED\r\n");
 
-		else if (i == 19) // ??????????????????��?��????Bestnav
+		else if (i == 19) // �����߼��������ѿ���λ�ú��ٶ�Bestnav
 			len = sprintf(UM982Clr, "BESTNAVB 0.05\r\n");
 
-		//		else if (i==22)// 20Hz ?? GNGGA ???
+		//		else if (i==22)// 20Hz �� GNGGA ��Ϣ
 		//			len = sprintf( UM982Clr,  "GPGGA 0.05\r\n");
 
 		else if (i == 20) // HEADING2
@@ -293,9 +293,9 @@ static bool send_init_msg(DriverInfo &driver_info)
 		else if (i == 21) // HEADING2
 			len = sprintf(UM982Clr, "HEADINGMODE VARIABLELENGTH\r\n");
 
-		else if (i == 22) // ????com2???????460800,8��????��,??��??,?��??��
+		else if (i == 22) // ����com2������Ϊ460800,8λ����λ,��У��,һλֹͣλ
 			len = sprintf(UM982Clr, "CONFIG COM1 460800 8 n 1\r\n");
-		else if (i == 23) // ????com2???????460800,8��????��,??��??,?��??��
+		else if (i == 23) // ����com2������Ϊ460800,8λ����λ,��У��,һλֹͣλ
 			len = sprintf(UM982Clr, "CONFIG COM2 460800 8 n 1\r\n");
 
 		driver_info.port.write((uint8_t *)&UM982Clr[0], len, portMAX_DELAY, portMAX_DELAY);
@@ -310,7 +310,7 @@ static void RTK_Server(void *pvParameters)
 	DriverInfo driver_info = *(DriverInfo *)pvParameters;
 	delete (DriverInfo *)pvParameters;
 
-	// ????????????
+	// ע�ᾫ׼���䴫����
 	uint32_t precKey;
 	do
 	{
@@ -318,18 +318,18 @@ static void RTK_Server(void *pvParameters)
 		os_delay(1.0);
 	} while (precKey == 0);
 
-	// GPS?????
+	// GPSʶ��״̬
 	GPS_Scan_Operation current_GPS_Operation = GPS_Scan_Baud115200;
-	// ??????????
+	// ���ݶ�ȡ״̬��
 	__attribute__((aligned(4))) uint8_t frame_datas[2048];
-	// ??��??????
+	// �ϴθ���ʱ��
 	TIME last_update_time;
 
-	// ???????????
+	// �ȴ���ʼ�����
 	while (getInitializationCompleted() == false)
 		os_delay(0.1);
 
-	// ???Rtk???
+	// ע��Rtk�˿�
 	RtkPort rtk_port;
 	rtk_port.ena = false;
 	rtk_port.write = driver_info.port.write;
@@ -339,7 +339,7 @@ static void RTK_Server(void *pvParameters)
 
 	bool rtc_updated = false;
 
-	// ????????????PPK
+	// ��ȡ�Ƿ���Ҫ��¼PPK
 	bool record_ppk = false;
 	uint8_t log_ppk[8];
 	if (ReadParam("SDLog_PPK", 0, 0, (uint64_t *)log_ppk, 0) == PR_OK)
@@ -351,9 +351,9 @@ static void RTK_Server(void *pvParameters)
 GPS_CheckBaud:
 	while (1)
 	{
-		// ?????????????
+		// ����ָ��������
 		driver_info.port.SetBaudRate(current_GPS_Operation, 3, 0.1);
-		// ?��???????
+		// �л�������
 		switch (current_GPS_Operation)
 		{
 		case GPS_Scan_Baud9600:
@@ -373,13 +373,13 @@ GPS_CheckBaud:
 			current_GPS_Operation = GPS_Scan_Baud9600;
 			break;
 		}
-		// ????????
+		// ��������
 		if (send_init_msg(driver_info) == false)
 			continue;
 
-		// ?????????
+		// ���Ĳ�����
 		driver_info.port.SetBaudRate(460800, 1, 0.1);
-		// ??????????????????????
+		// ��ս��ջ�����׼����������
 		driver_info.port.reset_rx(0.1);
 		GPS_State_Machine gps_state;
 		ResetRxStateMachine(&gps_state);
@@ -394,7 +394,7 @@ GPS_CheckBaud:
 				if (res)
 				{
 					if (gps_state.frame_id == 2118)
-					{ // ?????,?????gps???????
+					{ // ��ʶ��,��ת��gps���ճ���
 						goto GPS_Present;
 					}
 				}
@@ -403,7 +403,7 @@ GPS_CheckBaud:
 	}
 
 GPS_Present:
-	// ???????
+	// �ط�����
 	// send_init_msg(driver_info);
 
 	uint32_t sensor_key = 0;
@@ -411,37 +411,37 @@ GPS_Present:
 	GpsDAOConfig gps_cfg;
 	if (ReadParamGroup("GPSDAOCfg", (uint64_t *)&gps_cfg, 0) == PR_OK)
 	{
-		// ???????
+		// ע�ᴫ����
 		sensor_key = PositionSensorRegister(default_rtk_sensor_index,
 											"RTK_UM982",
 											Position_Sensor_Type_GlobalPositioning,
 											Position_Sensor_DataType_sv_xy,
 											Position_Sensor_frame_ENU,
-											gps_cfg.delay[0], // ???
-											30,				  // xy???��?
-											30				  // z???��?
+											gps_cfg.delay[0], // ��ʱ
+											30,				  // xy���ζ�
+											30				  // z���ζ�
 		);
 
-		// ?????????
+		// ע����򴫸���
 		dao_key = DAOSensorRegister(0, "DRTK", vector3<double>(gps_cfg.DRTK_VecX[0], gps_cfg.DRTK_VecY[0], gps_cfg.DRTK_VecZ[0]), false, gps_cfg.delay[0]);
 	}
 	else
-	{ // ???????
+	{ // ע�ᴫ����
 		sensor_key = PositionSensorRegister(default_rtk_sensor_index,
 											"RTK_UM982",
 											Position_Sensor_Type_GlobalPositioning,
 											Position_Sensor_DataType_sv_xy,
 											Position_Sensor_frame_ENU,
-											0.1, // ???
-											30,	 // xy???��?
-											30	 // z???��?
+											0.1, // ��ʱ
+											30,	 // xy���ζ�
+											30	 // z���ζ�
 		);
 		gps_cfg.DRTK_VecX[0] = gps_cfg.DRTK_VecY[0] = gps_cfg.DRTK_VecZ[0] = 0;
 	}
-	// ????Rtk???
+	// ����Rtkע��
 	RtkPort_setEna(rtk_port_ind, true);
 
-	// gps??
+	// gps״̬
 	bool gps_available = false;
 	bool z_available = false;
 	double alt_offset = -1000000;
@@ -449,7 +449,7 @@ GPS_Present:
 	double gps_alt;
 	TIME gps_update_TIME;
 
-	// ??????????????????????
+	// ��ս��ջ�����׼����������
 	driver_info.port.reset_rx(0.1);
 	GPS_State_Machine gps_state, gps_state_nmea;
 	ResetRxStateMachine(&gps_state);
@@ -459,21 +459,21 @@ GPS_Present:
 	struct Dop_Pack
 	{
 		uint32_t itow;
-		float gdop;	  // ???��???????
-		float pdop;	  // ��?????????
-		float tdop;	  // ??�A??????
-		float vdop;	  // ???????????
-		float hdop;	  // ??????????
-		float ndop;	  // ?????????
-		float edop;	  // ?????????
-		float Cutoff; // ????????
+		float gdop;	  // ���ξ�������
+		float pdop;	  // λ�þ�������
+		float tdop;	  // ʱ�侫������
+		float vdop;	  // ��ֱ��������
+		float hdop;	  // ˮƽ��������
+		float ndop;	  // ���򾫶�����
+		float edop;	  // ���򾫶�����
+		float Cutoff; // �����߶Ƚ�
 		float rsv2;
 		uint16_t svNum;
 		uint16_t prn;
 	} __attribute__((packed));
 	Dop_Pack dop_pack = {0};
 
-	// ????????
+	// ��������
 	double addition_inf[8] = {0};
 
 	while (1)
@@ -484,51 +484,51 @@ GPS_Present:
 			if (GPS_ParseByte(&gps_state, frame_datas, r_data))
 			{
 				if (gps_state.frame_id == 2118)
-				{ // BESTNAV ???��?��????
-					// ???
+				{ // BESTNAV ���λ�ú��ٶ�
+					// ��¼
 					if (record_ppk)
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 
 					last_update_time = TIME::now();
 					struct Best_Nav_Pack
 					{
-						uint32_t PosStatus; // ��?????
-						uint32_t PosType;	// ��??????
-						double lat;			// ��???deg
-						double lon;			// ?????deg
-						double height;		// ???��??m
-						float undulation;	// ?????????- ????????WGS84 ???????????,??
-						uint32_t datum_id;	// ????? ID ??,???????? WGS84
-						float LatAcc;		// ��??????m
-						float LonAcc;		// ????????m
-						float HeightAcc;	// ???????m
-						uint8_t stn_id[4];	// ??? ID
-						float diff_age;		// ????????s
-						float sol_age;		// ????????s
-						uint8_t SVTrack;	// ???????????
-						uint8_t SVUse;		// ???????????????
+						uint32_t PosStatus; // λ�ý�״̬
+						uint32_t PosType;	// λ������
+						double lat;			// γ�ȣ�deg
+						double lon;			// ���ȣ�deg
+						double height;		// ���θߣ�m
+						float undulation;	// ���ˮ׼����- ���ˮ׼���WGS84 ������֮��ľ�,��
+						uint32_t datum_id;	// ����ϵ ID ��,��ǰ��֧�� WGS84
+						float LatAcc;		// γ�ȱ�׼�m
+						float LonAcc;		// ���ȱ�׼�m
+						float HeightAcc;	// �߶ȱ�׼�m
+						uint8_t stn_id[4];	// ��վ ID
+						float diff_age;		// ������ڣ�s
+						float sol_age;		// ������ڣ�s
+						uint8_t SVTrack;	// ���ٵ�������
+						uint8_t SVUse;		// �ڽ���ʹ�õ�������
 						uint8_t rsv2[3];
-						uint8_t ext_sol_stat; // ????????
-						uint8_t mask1;		  // Galileo ???????????
-						uint8_t mask2;		  // GPS, GLONASS ?? BDS ???????????
-						uint32_t VelStatus;	  // ??????
-						uint32_t VelType;	  // ???????
-						float latency;		  // ?????????????????????????��
-						float age;			  // ????????s
-						double horSpeed;	  // ?????????m/s
-						double horSpeedAngle; // ??????�L?????????????????????????deg
-						double VerticalSpeed; // ???????m/s
-						float VerspdStd;	  // ????????????�� m/s
-						float HorspdStd;	  // ???????????�� m/s
+						uint8_t ext_sol_stat; // ��չ���״̬
+						uint8_t mask1;		  // Galileo ʹ�õ��ź�����
+						uint8_t mask2;		  // GPS, GLONASS �� BDS ʹ�õ��ź�����
+						uint32_t VelStatus;	  // �ٶȽ�״̬
+						uint32_t VelType;	  // �ٶ�����
+						float latency;		  // ���ٶ�ʱ�������ӳ�ֵ������Ϊ��λ
+						float age;			  // ������ڣ�s
+						double horSpeed;	  // �Ե�ˮƽ�ٶȣ�m/s
+						double horSpeedAngle; // ������汱��ʵ�ʶԵ��˶�������Ե���켣����deg
+						double VerticalSpeed; // ��ֱ�ٶȣ�m/s
+						float VerspdStd;	  // �߳��ٶȱ�׼���λ m/s
+						float HorspdStd;	  // ˮƽ�ٶȱ�׼���λ m/s
 					} __attribute__((packed));
 					Best_Nav_Pack *pack = (Best_Nav_Pack *)&frame_datas[gps_state.header_length];
 
 					uint8_t gps_fix = 0;
-					if (pack->PosType == 16 || (pack->PosType == 17) || (pack->PosType == 18)) // ????��
+					if (pack->PosType == 16 || (pack->PosType == 17) || (pack->PosType == 18)) // ���㶨λ
 						gps_fix = 3;
-					else if (pack->PosType == 32 || pack->PosType == 33 || pack->PosType == 34) // RTK ?????
+					else if (pack->PosType == 32 || pack->PosType == 33 || pack->PosType == 34) // RTK �����
 						gps_fix = 5;
-					else if (pack->PosType == 48 || pack->PosType == 49 || pack->PosType == 50) // RTK ?????
+					else if (pack->PosType == 48 || pack->PosType == 49 || pack->PosType == 50) // RTK �̶���
 						gps_fix = 6;
 
 					//					double hdop = (pack->LatAcc+pack->LonAcc)*0.5;
@@ -594,8 +594,8 @@ GPS_Present:
 					velocity.z = pack->VerticalSpeed * 100;									  // Up
 					gps_alt += velocity.z * t;
 					if (vdop < 6)
-					{ // ???????��????
-						// ????????
+					{ // �߾��ȸ߶�λ�ý��
+						// ʹ�þ��Ը߶�
 						double r_height = pack->height * 100;
 						if (alt_offset <= -100000)
 							alt_offset = r_height - gps_alt;
@@ -614,7 +614,7 @@ GPS_Present:
 					else
 						PositionSensorChangeDataType(default_rtk_sensor_index, sensor_key, Position_Sensor_DataType_sv_xy);
 
-					// ???��?
+					// ���ζ�
 					double xy_trustD = hdop * 100;
 					double z_trustD = vdop * 100;
 					PositionSensorUpdatePositionGlobalVel(default_rtk_sensor_index, sensor_key, position_Global, velocity,
@@ -628,27 +628,27 @@ GPS_Present:
 					);
 				}
 				else if (gps_state.frame_id == 972)
-				{ // UNIHEADING ???????
+				{ // UNIHEADING ������Ϣ
 					last_update_time = TIME::now();
 					struct Heading_Pack
 					{
-						uint32_t solStatus; // ��?????
-						uint32_t posType;	// ��??????
-						float length;		// ????? (0 ?? 3000 m)
-						float heading;		// ???? (0 ?? 360.0 deg)
-						float pitch;		// ????(??90 deg)
+						uint32_t solStatus; // λ�ý�״̬
+						uint32_t posType;	// λ������
+						float length;		// ���߳� (0 �� 3000 m)
+						float heading;		// ���� (0 �� 360.0 deg)
+						float pitch;		// ����(��90 deg)
 						float rsv2;
-						float hdgstddev;   // ?????????
-						float ptchstddev;  // ??????????
-						uint8_t stn_id[4]; // ??? ID
-						uint8_t SVTrack;   // ???????????
-						uint8_t SVUse;	   // ???????????????
-						uint8_t obs;	   // ??????????????????
-						uint8_t multi;	   // ?????????????L2??????????
+						float hdgstddev;   // �����׼ƫ��
+						float ptchstddev;  // ������׼ƫ��
+						uint8_t stn_id[4]; // ��վ ID
+						uint8_t SVTrack;   // ���ٵ�������
+						uint8_t SVUse;	   // �ڽ���ʹ�õ�������
+						uint8_t obs;	   // ��ֹ�߶Ƚ����ϵ�������
+						uint8_t multi;	   // ��ֹ�߶Ƚ�������L2�۲��������
 						uint8_t rsv3;
-						uint8_t ext_sol_stat; // ????????
-						uint8_t mask1;		  // Galileo ???????????
-						uint8_t mask2;		  // GPS, GLONASS ?? BDS ???????????
+						uint8_t ext_sol_stat; // ��չ���״̬
+						uint8_t mask1;		  // Galileo ʹ�õ��ź�����
+						uint8_t mask2;		  // GPS, GLONASS �� BDS ʹ�õ��ź�����
 					} __attribute__((packed));
 					Heading_Pack *pack = (Heading_Pack *)&frame_datas[gps_state.header_length];
 					double len_pos = sq(gps_cfg.DRTK_VecX[0]) + sq(gps_cfg.DRTK_VecY[0]) + sq(gps_cfg.DRTK_VecZ[0]);
@@ -671,19 +671,19 @@ GPS_Present:
 					}
 				}
 				else if (gps_state.frame_id == 309)
-				{ // EVENT????
+				{ // EVENT����
 					last_update_time = TIME::now();
 					struct Event_Pack
 					{
 						uint32_t itow;
-						uint8_t eventID; // ???????Event 1 ??Event 2??
-						uint8_t status;	 // ?????????????
+						uint8_t eventID; // �¼����루Event 1 ��Event 2��
+						uint8_t status;	 // �¼�״̬��������
 						uint8_t reserved0;
 						uint8_t reserved1;
-						uint32_t week; // ??
+						uint32_t week; // ��
 						uint32_t reserved2;
-						uint32_t offset_second;	   // ????? GGA ???????EVENT ???????????GGA ???????????????????(second)
-						uint32_t offset_SubSecond; // ????? GGA ???????EVENT ???????????GGA ???????????????????(nanosecond)
+						uint32_t offset_second;	   // ����ǰ GGA ���Ƶ�ʣ�EVENT ʱ������ӽ���GGA ����ľ���ʱ��֮���ƫ��ֵ(second)
+						uint32_t offset_SubSecond; // ����ǰ GGA ���Ƶ�ʣ�EVENT ʱ������ӽ���GGA ����ľ���ʱ��֮���ƫ��ֵ(nanosecond)
 						uint16_t prn;
 					} __attribute__((packed));
 					Event_Pack *pack = (Event_Pack *)&frame_datas[gps_state.header_length];
@@ -691,26 +691,26 @@ GPS_Present:
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 				}
 				else if (gps_state.frame_id == 954)
-				{ // STADOP DOP???
+				{ // STADOP DOP��Ϣ
 					last_update_time = TIME::now();
 					dop_pack = *(Dop_Pack *)&frame_datas[gps_state.header_length];
 				}
 				else if (gps_state.frame_id == 101)
-				{ // RECTIME ???
+				{ // RECTIME ��Ϣ
 					last_update_time = TIME::now();
 					struct Time_Pack
 					{
 						uint32_t itow;
-						uint32_t clock_status; // ????????
-						double offset;		   // ????? GPS ??????????
-						double Offset_std;	   // GPS ??? UTC ?????
-						uint32_t year;		   // UTC ??
-						uint8_t month;		   // UTC ?? (0-12)
-						uint8_t day;		   // UTC ?? (0-31)
-						uint8_t hour;		   // UTC ��? (0-23)
-						uint8_t min;		   // UTC ???? (0-59)
-						uint32_t ms;		   // UTC ???? (0-60999)
-						uint32_t utc_status;   // UTC ????0 = INVALID????��?? 1 =VALID????��?? 2 = WARNING 11
+						uint32_t clock_status; // ʱ��ģ��״̬
+						double offset;		   // ����� GPS ʱ�Ľ��ջ��Ӳ�
+						double Offset_std;	   // GPS ʱ�䵽 UTC ʱ���ƫ
+						uint32_t year;		   // UTC ��
+						uint8_t month;		   // UTC �� (0-12)
+						uint8_t day;		   // UTC �� (0-31)
+						uint8_t hour;		   // UTC Сʱ (0-23)
+						uint8_t min;		   // UTC ���� (0-59)
+						uint32_t ms;		   // UTC ���� (0-60999)
+						uint32_t utc_status;   // UTC ״̬��0 = INVALID����Ч�� 1 =VALID����Ч�� 2 = WARNING 11
 					} __attribute__((packed));
 					Time_Pack *pack = (Time_Pack *)&frame_datas[gps_state.header_length];
 
@@ -723,28 +723,28 @@ GPS_Present:
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 				}
 				else if (gps_state.frame_id == 43)
-				{ // ????????????
+				{ // ԭʼ�۲�������Ϣ
 					if (record_ppk)
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 					// debug_test[23] =	gps_state.frame_datas_length;
 				}
 				else if (gps_state.frame_id == 1695)
-				{ // BDS ????????
+				{ // BDS ��������
 					if (record_ppk)
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 				}
 				else if (gps_state.frame_id == 722)
-				{ // GLONASS ????????
+				{ // GLONASS ��������
 					if (record_ppk)
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 				}
 				else if (gps_state.frame_id == 1330)
-				{ // QZSS ????????
+				{ // QZSS ��������
 					if (record_ppk)
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 				}
 				else if (gps_state.frame_id == 25)
-				{ // GPS ????????
+				{ // GPS ��������
 					if (record_ppk)
 						SDLog_Ubx((const char *)frame_datas, gps_state.frame_datas_length);
 				}
@@ -753,24 +753,24 @@ GPS_Present:
 					last_update_time = TIME::now();
 					struct Heading2_Pack
 					{
-						uint32_t solStatus; // ��?????
-						uint32_t posType;	// ��??????
-						float length;		// ????? (0 ?? 3000 m)
-						float heading;		// ???? (0 ?? 360.0 deg)
-						float pitch;		// ????(??90 deg)  ??????????????
+						uint32_t solStatus; // λ�ý�״̬
+						uint32_t posType;	// λ������
+						float length;		// ���߳� (0 �� 3000 m)
+						float heading;		// ���� (0 �� 360.0 deg)
+						float pitch;		// ����(��90 deg)  �ƶ�վ�ڻ�վ�Ϸ�Ϊ��
 						float rsv2;
-						float hdgstddev;		  // ?????????
-						float ptchstddev;		  // ??????????
-						uint8_t rover_stn_id[4];  // ??? ID
-						uint8_t master_stn_id[4]; // ??? ID
-						uint8_t SVTrack;		  // ???????????
-						uint8_t SVUse;			  // ???????????????
-						uint8_t obs;			  // ??????????????????
-						uint8_t multi;			  // ?????????????L2??????????
+						float hdgstddev;		  // �����׼ƫ��
+						float ptchstddev;		  // ������׼ƫ��
+						uint8_t rover_stn_id[4];  // ��վ ID
+						uint8_t master_stn_id[4]; // ��վ ID
+						uint8_t SVTrack;		  // ���ٵ�������
+						uint8_t SVUse;			  // �ڽ���ʹ�õ�������
+						uint8_t obs;			  // ��ֹ�߶Ƚ����ϵ�������
+						uint8_t multi;			  // ��ֹ�߶Ƚ�������L2�۲��������
 						uint8_t rsv3;
-						uint8_t ext_sol_stat; // ????????
-						uint8_t mask1;		  // Galileo ???????????
-						uint8_t mask2;		  // GPS, GLONASS ?? BDS ???????????
+						uint8_t ext_sol_stat; // ��չ���״̬
+						uint8_t mask1;		  // Galileo ʹ�õ��ź�����
+						uint8_t mask2;		  // GPS, GLONASS �� BDS ʹ�õ��ź�����
 					} __attribute__((packed));
 					Heading2_Pack *pack = (Heading2_Pack *)&frame_datas[gps_state.header_length];
 
@@ -807,19 +807,19 @@ GPS_Present:
 			}
 
 			if (last_update_time.get_pass_time() > 2)
-			{ // ???????????
+			{ // ���ղ�������
 				PositionSensorUnRegister(default_rtk_sensor_index, sensor_key);
 				DAOSensorUnRegister(0, dao_key);
-				// ???Rtk???
+				// �ر�Rtkע��
 				RtkPort_setEna(rtk_port_ind, false);
 				goto GPS_CheckBaud;
 			}
 		}
 		else
-		{ // ???????????
+		{ // ���ղ�������
 			PositionSensorUnRegister(default_rtk_sensor_index, sensor_key);
 			DAOSensorUnRegister(0, dao_key);
-			// ???Rtk???
+			// �ر�Rtkע��
 			RtkPort_setEna(rtk_port_ind, false);
 			goto GPS_CheckBaud;
 		}

@@ -482,9 +482,12 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 				if (is_AFunc_auto(cMode) && ((MFunc_cfg.configs[0] & MCfg_NoRcCtrlInAuto_Bit) == 0))
 				{
 					if (ModeButtonZone <= 5)
-						reqMode = AFunc_PosHold;
-					else if (is_AFunc_auto(MFunc_cfg.Bt1AFunc1[8 * ModeButtonZone]) == false)
-						reqMode = MFunc_cfg.Bt1AFunc1[8 * ModeButtonZone];
+					{
+						if (is_AFunc_auto(MFunc_cfg.Bt1AFunc1[8 * ModeButtonZone]) == false)
+							reqMode = MFunc_cfg.Bt1AFunc1[8 * ModeButtonZone];
+						else
+							reqMode = AFunc_PosHold;
+					}
 					else
 						reqMode = AFunc_PosHold;
 					MissionButtonZone = RTLButtonZone = 255;
@@ -647,6 +650,7 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 
 		if (is_MSafeCtrl())
 		{ // 当前处于安全模式控制
+			mode_switched = true;
 			/*判断退出模式*/
 			if (inFlight == false)
 			{
@@ -1087,7 +1091,7 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 				swManualMode goto Manual_Mode;
 			}
 
-			if (rc.available == false && (MFunc_cfg.configs[0] & MCfg_WpNRcRTL_Bit))
+			if ((MFunc_cfg.configs[0] & MCfg_WpNRcRTL_Bit) && !rc.available && noRcStartTIME.get_pass_time() > 2)
 			{
 				// 无遥控信号进入安全模式
 				change_Mode(AFunc_RTL) goto RTL;
@@ -1640,7 +1644,10 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 							if (res)
 								++MissionMode_BackToLastWp;
 							else
+							{
+								Position_Control_set_XYZAutoSpeed(restoreWpInf.vel);
 								MissionMode_BackToLastWp = 255;
+							}
 						}
 						break;
 					}
@@ -1685,7 +1692,7 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 									vector3<double> pos;
 									get_Position_Ctrl(&pos);
 									double target_height;
-									target_height = current_mission_inf.params[6];
+									target_height = current_mission_inf.params[6] * 100;
 
 									double err = target_height - sensor.position.z;
 									Position_Control_set_TargetVelocityZ(constrain(err, 200.0));
@@ -1695,14 +1702,14 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 									double abs_err = fabs(err);
 
 									double errLimit = getPosCtrlCfg()->maxVelXY[0] - 3 * (abs_err - 50);
-									double groundLimit = 1.0 * (sensor.position.z - 20);
+									double groundLimit = 5.0 * (sensor.position.z - 20);
 									if (groundLimit < 20)
 										groundLimit = 20;
 
-									if (errLimit < groundLimit)
-										maxFrontPointL = errLimit;
-									else
-										maxFrontPointL = groundLimit;
+									//										if( errLimit < groundLimit )
+									//											maxFrontPointL = errLimit;
+									//										else
+									maxFrontPointL = groundLimit;
 
 									if (maxFrontPointL >= 0 && (AvDist < 0 || maxFrontPointL < AvDist))
 										AvDist = maxFrontPointL;
@@ -1734,6 +1741,7 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 						get_Position_ControlMode(&pos_mode);
 						if (pos_mode == Position_ControlMode_Position)
 						{ // 已成功移动到上次航线位置
+							Position_Control_set_XYZAutoSpeed(restoreWpInf.vel);
 							MissionMode_BackToLastWp = 255;
 						}
 						break;
@@ -1809,7 +1817,10 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 						if (res)
 							++MissionMode_BackToLastWp;
 						else
+						{
+							Position_Control_set_XYZAutoSpeed(restoreWpInf.vel);
 							MissionMode_BackToLastWp = 255;
+						}
 						break;
 					}
 
@@ -1820,13 +1831,19 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 						Position_ControlMode alt_mode;
 						get_Altitude_ControlMode(&alt_mode);
 						if (alt_mode == Position_ControlMode_Position)
+						{
+							Position_Control_set_XYZAutoSpeed(restoreWpInf.vel);
 							MissionMode_BackToLastWp = 255;
+						}
 						break;
 					}
 
 					default:
+					{
+						Position_Control_set_XYZAutoSpeed(restoreWpInf.vel);
 						MissionMode_BackToLastWp = 255;
 						break;
+					}
 					}
 				}
 			}
@@ -1841,6 +1858,11 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 
 				// 上报模式状态
 				setCurrentFlyMode(AFunc_Mission);
+
+				if (current_mission_inf.cmd == MAV_CMD_NAV_WAYPOINT)
+				{
+					current_mission_inf.params[3] = std::nan("");
+				}
 
 				int32_t res = -100;
 				if (current_mission_inf.cmd == 177)
@@ -2058,7 +2080,7 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 									}
 
 									// 存储飞行状态
-									if (pos_mode == Position_ControlMode_RouteLine3D)
+									if (pos_mode == Position_ControlMode_RouteLine3D || pos_mode == Position_ControlMode_RouteLine)
 									{ // 直线飞行
 										vector3<double> line_AB;
 										double flightDistance = -1;
@@ -2071,6 +2093,9 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 											restoreWpInf.line_fs = flightDistance;
 											restoreWpInf.wpR = current_mission_inf.params[1] * 100;
 											restoreWpInf.CamTrigDist = CamTriggDist;
+											double vel;
+											Position_Control_get_XYZAutoSpeed(&vel);
+											restoreWpInf.vel = vel;
 											storeRAM_restoreWpInf();
 										}
 									}
@@ -2167,14 +2192,14 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 													else
 														errLimit *= 5;
 												}
-												double groundLimit = 1.0 * (current_height - 20);
+												double groundLimit = 5.0 * (current_height - 20);
 												if (groundLimit < 20)
 													groundLimit = 20;
 
-												if (errLimit >= 0 && errLimit < groundLimit)
-													maxFrontPointL = errLimit;
-												else
-													maxFrontPointL = groundLimit;
+												//													if( errLimit>=0 && errLimit<groundLimit )
+												//														maxFrontPointL = errLimit;
+												//													else
+												maxFrontPointL = groundLimit;
 
 												if (maxFrontPointL >= 0 && (AvDist < 0 || maxFrontPointL < AvDist))
 													AvDist = maxFrontPointL;
@@ -2393,6 +2418,9 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 												restoreWpInf.line_z = -BA.z;
 												restoreWpInf.line_fs = 0;
 												restoreWpInf.CamTrigDist = CamTriggDist;
+												double vel;
+												Position_Control_get_XYZAutoSpeed(&vel);
+												restoreWpInf.vel = vel;
 												storeRAM_restoreWpInf();
 
 												res = -3;
@@ -2460,7 +2488,7 @@ ModeResult M32_PosCtrl::main_func(void *param1, uint32_t param2)
 						uint16_t chk_ind;
 						if (ReadCurrentMission(&chk_inf, &chk_ind))
 						{ // 读取当前任务信息比较
-							if (chk_ind == current_mission_ind && memcmp(&chk_inf, &current_mission_inf, sizeof(MissionInf)) == 0)
+							if (chk_ind == current_mission_ind /*&& memcmp( &chk_inf, &current_mission_inf, sizeof(MissionInf) ) == 0*/)
 							{ // 如果相同才切换下一个任务
 								if (setCurrentMission(getCurrentMissionInd() + navInf.usr_temp[MissionInc] + 1) == false)
 								{ // 无航点信息返回手动模式

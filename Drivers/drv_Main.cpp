@@ -23,6 +23,7 @@
 #include "drv_BootLoader.hpp"
 
 // 串口设备
+#include "drv_CRSF.hpp"
 // GPS
 #include "drv_GPS.hpp"
 #include "drv_GPS_nmea.hpp"
@@ -57,19 +58,24 @@
 // 串口避障
 #include "drv_TFMiniAv.hpp"
 #include "drv_MR72_UartAv.hpp"
-// 串口称重
+// 二次开发接口
+#include "drv_SDI.hpp"
 #include "drv_ADM001.hpp"
 
 // CAN设备
 #include "drv_Can.hpp"
 #include "drv_CAN_BMS_TATTU.hpp"
+#include "drv_CAN_BMS_ZHIAN.hpp"
 // CAN定高
 #include "drv_CAN_Radar_TR60_AH.hpp"
 // CAN避障
 #include "drv_CAN_QOAR1271_Av.hpp"
 #include "drv_CAN_MR72_Av.hpp"
 #include "drv_CAN_MR72_BackAv.hpp"
-
+// CAN发动机
+#include "drv_CAN_Engine_Zongshen.hpp"
+#include "drv_CAN_Engine_Xuanfu_16KW.hpp"
+#include "drv_CAN_Engine_Xuanfu_7KW.hpp"
 // IIC设备
 #include "drv_IntIIC.hpp"
 #include "drv_ExtIIC.hpp"
@@ -132,6 +138,7 @@ void init_drv_Main()
 	init_drv_IntIIC();
 	// 接收机驱动
 	init_drv_RCSbus();
+	init_drv_CRSF();
 
 	// 外置IIC驱动
 	init_drv_ExtIIC();
@@ -180,17 +187,21 @@ void init_drv_Main()
 	// 串口避障
 	init_drv_TFMiniAv();
 	init_drv_MR72_UartAv();
-	// 串口稱重
-	init_drv_ADM001();
 	// 二次开发接口
 	// init_drv_SDI();
+	init_drv_ADM001();
 
 	// CAN驱动
 	init_drv_CAN_BMS_TATTU();
+	init_drv_CAN_BMS_ZHIAN();
 	// CAN定高
 	init_drv_Radar_TR60_AH();
 	// CAN避障
 	init_drv_CAN_QOAR1271_Av();
 	init_drv_CAN_MR72_Av();
 	init_drv_CAN_MR72_BackAv();
+	// CAN发动机
+	init_drv_Engine_Zongshen();
+	init_drv_Engine_Xuanfu_16KW();
+	init_drv_Engine_Xuanfu_7KW();
 }
