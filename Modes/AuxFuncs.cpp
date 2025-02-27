@@ -12,37 +12,37 @@
 #include "usb_composite.h"
 #include "MavlinkCMDProcess.hpp"
 
-// ����֮ǰͨ��ֵ
+// 保存之前通道值
 static double last_Channel_values[16];
-// ͨ����ʱ����
+// 通道临时变量
 static uint32_t channelTemp1[16] = {0};
 static float channelTemp2[16] = {0};
 static float channelTemp3[16] = {0};
-// ��̨�Ƿ��Զ�����
+// 云台是否自动控制
 static float GimbalCtrl_LockedAtt[16];
 
-/*��ѥ����*/
-// ���մ���
+/*热靴触发*/
+// 拍照次数
 static uint16_t PhotoCnt = 0;
-// ��Ƭ���
+// 相片序号
 static uint16_t PhotoIndex = 1;
 
-// ��ʼ�ȴ�������־
+// 开始等待触发标志
 static bool waiting_IOTrig = false;
-// ������ɱ�־
+// 发送完成标志
 static EventGroupHandle_t IO_events = xEventGroupCreate();
 
 static SemaphoreHandle_t PosLogMutex = xSemaphoreCreateMutex();
 static bool SD_Pos_Record()
 {
-	// ��ȡʱ��
+	// 获取时间
 	RTC_TimeStruct RTC_Time;
 	RTC_Time = Get_RTC_Time();
-	// ��ȡ�ٶ�
+	// 获取速度
 	vector3<double> vel;
 	get_VelocityENU_Ctrl(&vel);
 
-	// ��ȡ��̬
+	// 获取姿态
 	Quaternion airframe_quat;
 	get_Attitude_quat(&airframe_quat);
 	airframe_quat.Enu2Ned();
@@ -50,7 +50,7 @@ static bool SD_Pos_Record()
 	static int8_t global_pos_ind = -1;
 	PosSensorHealthInf3 posInf;
 	if (global_pos_ind < 0)
-	{ // ��һ�λ�ȡ����λ�ô�����
+	{ // 第一次获取最优位置传感器
 		if (get_OptimalGlobal_XYZ(&posInf))
 			global_pos_ind = posInf.sensor_ind;
 	}
@@ -74,15 +74,15 @@ static bool SD_Pos_Record()
 		{
 			if (gps_sensor.data.available && gps_sensor.data.sensor_type == Position_Sensor_Type_GlobalPositioning)
 			{
-				// ���㾭γ��
+				// 计算经纬度
 				map_projection_reproject(&posInf.mp,
 										 posInf.PositionENU.x + posInf.HOffset.x,
 										 posInf.PositionENU.y + posInf.HOffset.y,
 										 &lat, &lon);
-				// �߶�
+				// 高度
 				alt = posInf.PositionENU.z + posInf.HOffset.z;
 				alt *= 0.01;
-				// ����
+				// 精度
 				accN = gps_sensor.inf.addition_inf[4] * 0.01;
 				accE = gps_sensor.inf.addition_inf[4] * 0.01;
 				accD = gps_sensor.inf.addition_inf[5] * 0.01;
@@ -128,7 +128,7 @@ static bool SD_Pos_Record()
 	if (!SDLog_Txt1(pos_txt_buf, n))
 		return false;
 
-	// ����������Ϣ������??
+	// 发送拍照信息到地面??
 	double Altitude_Local = 0;
 	vector3<double> Position;
 	get_Position_Ctrl(&Position);
@@ -139,7 +139,7 @@ static bool SD_Pos_Record()
 
 	mavlink_message_t msg_sd;
 	for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-	{ // �������ж˿�
+	{ // 遍历所有端口
 		if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 		{
 			mavlink_msg_camera_feedback_pack_chan(
@@ -210,14 +210,14 @@ bool wait_IOTrig(double TIME)
 		return true;
 }
 
-// IO��ת����??
+// IO翻转计数??
 extern "C" void TIM4_IRQHandler()
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	static TIME last_trig_TIME(false);
 	uint32_t SR = TIM4->SR;
 	if (SR & (1 << 2))
-	{ // ����IO���½���
+	{ // 捕获到IO口下降沿
 		uint32_t CCR2 = TIM4->CCR2;
 		double pass_t = last_trig_TIME.get_pass_time_st();
 
@@ -232,9 +232,9 @@ extern "C" void TIM4_IRQHandler()
 	}
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
-/*��ѥ����*/
+/*热靴触发*/
 
-/*��¼Pos*/
+/*记录Pos*/
 bool recordPos(bool acTrig)
 {
 	if (acTrig)
@@ -245,7 +245,7 @@ bool recordPos(bool acTrig)
 
 		mavlink_message_t msg_sd;
 		for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-		{ // �������ж˿�
+		{ // 遍历所有端口
 			if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 			{
 				mavlink_msg_camera_status_pack_chan(
@@ -277,9 +277,9 @@ bool recordPos(bool acTrig)
 	}
 	return SD_Pos_Record();
 }
-/*��¼Pos*/
+/*记录Pos*/
 
-/*���չ���*/
+/*拍照功能*/
 static SemaphoreHandle_t CamMutex = xSemaphoreCreateRecursiveMutex();
 bool AuxCamTakePhoto()
 {
@@ -296,7 +296,7 @@ bool AuxCamTakePhoto()
 		if (aux_configs.Aux_CamTrigEna[0])
 			wait_IOTrig_start();
 
-		// ���ͣ����ߣ����PWM
+		// 拉低（拉高）相机PWM
 		for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 		{
 			uint16_t aux_cfg = ((uint16_t *)&aux_configs)[i * 4];
@@ -308,11 +308,11 @@ bool AuxCamTakePhoto()
 		}
 
 		if (cam_chans == 0)
-		{ // ���������
+		{ // 无相机返回
 			uint8_t res = 0;
 
 			if (aux_configs.Aux_YTSurveyPic[0] > 0)
-			{ // ������̨��Ҫ����
+			{ // 数字云台需要拍照
 				if (!aux_configs.Aux_CamTrigEna[0])
 					wait_IOTrig_start();
 
@@ -321,12 +321,12 @@ bool AuxCamTakePhoto()
 				SendCmdMsgToSingleCamera(cmd_msg, 0.01);
 
 				if (aux_configs.Aux_CamTrigEna[0] > 0)
-				{ // ������̨��Ҫ�ȴ�trig���Ŵ���
+				{ // 数字云台需要等待trig引脚触发
 					if (wait_IOTrig(aux_configs.Aux_CamShTime[0] > 1.5 ? 1.5 : aux_configs.Aux_CamShTime[0]))
 						res = 10;
 				}
 				else
-				{ // ������̨�ȴ�ָ�����
+				{ // 数字云台等待指令回馈
 					wait_IOTrig(0);
 
 					double waitT = 0;
@@ -335,7 +335,7 @@ bool AuxCamTakePhoto()
 						CmdMsg msg;
 						bool msg_rd = ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0.002);
 						if (msg_rd)
-						{ // ��������ɹ�
+						{ // 相机反馈成功
 							res = msg.cmd;
 							break;
 						}
@@ -357,7 +357,7 @@ bool AuxCamTakePhoto()
 
 				mavlink_message_t msg_sd;
 				for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-				{ // �������ж˿�
+				{ // 遍历所有端口
 					if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 					{
 						mavlink_msg_camera_status_pack_chan(
@@ -387,7 +387,7 @@ bool AuxCamTakePhoto()
 					}
 				}
 
-				// �������ȴ��ڲ����������̼�¼POS
+				// 如果无需等待内部触发则立刻记录POS
 				if (res != 3)
 					SD_Pos_Record();
 
@@ -397,7 +397,7 @@ bool AuxCamTakePhoto()
 				return false;
 		}
 
-		// ���ߣ����ͣ����PWM
+		// 拉高（拉低）相机PWM
 		os_delay(aux_configs.Aux_CamShTime[0]);
 		for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 		{
@@ -412,7 +412,7 @@ bool AuxCamTakePhoto()
 
 		mavlink_message_t msg_sd;
 		for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-		{ // �������ж˿�
+		{ // 遍历所有端口
 			if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 			{
 				mavlink_msg_camera_status_pack_chan(
@@ -443,7 +443,7 @@ bool AuxCamTakePhoto()
 		}
 
 		if (aux_configs.Aux_CamTrigEna[0])
-		{ // �ȴ������ѥ
+		{ // 等待相机热靴
 			if (wait_IOTrig(aux_configs.Aux_CamShTime[0] > 1.5 ? 1.5 : aux_configs.Aux_CamShTime[0]) == false)
 			{
 				xSemaphoreGiveRecursive(CamMutex);
@@ -451,7 +451,7 @@ bool AuxCamTakePhoto()
 			}
 		}
 
-		// �����ѥû��ʹ�������̼�¼POS
+		// 如果热靴没有使能则立刻记录POS
 		if (!aux_configs.Aux_CamTrigEna[0])
 			SD_Pos_Record();
 
@@ -486,7 +486,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 		if (camPhotoAsyncStep > 1)
 			xSemaphoreGiveRecursive(CamMutex);
 		camPhotoAsyncStep = camPhotoAsyncT = 0;
-		// ���������̨����������
+		// 清空数字云台反馈缓冲区
 		CmdMsg msg;
 		ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0);
 
@@ -494,7 +494,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 
 	if (camPhotoAsyncStep == 0)
-	{ // ����ʱ����������̨���շ���
+	{ // 空闲时处理数字云台拍照反馈
 		CmdMsg msg;
 		bool msg_rd = ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0);
 		if (msg_rd && msg.cmd == 1)
@@ -516,14 +516,14 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	switch (camPhotoAsyncStep)
 	{
 	case 1:
-	{ // ׼����������
+	{ // 准备启动触发
 		if (xSemaphoreTakeRecursive(CamMutex, 0.1 * configTICK_RATE_HZ))
 		{
 			uint8_t cam_chans = 0;
 			lastCamPhotoAsyncPhotoIndex = PhotoIndex;
 
 			uint8_t MainMotorCount = get_MainMotorCount();
-			// ʹ�����PWM
+			// 使能相机PWM
 			for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 			{
 				uint16_t aux_cfg = ((uint16_t *)&aux_configs)[i * 4];
@@ -536,21 +536,21 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 			camPhotoAsyncT = 0;
 
 			if (cam_chans == 0)
-			{ // ���������������̨
+			{ // 无相机尝试数字云台
 				uint8_t res = 0;
 
 				if (aux_configs.Aux_YTSurveyPic[0] > 0)
-				{ // ������̨��Ҫ����
+				{ // 数字云台需要拍照
 					CmdMsg cmd_msg;
 					cmd_msg.cmd = MAV_CMD_IMAGE_START_CAPTURE;
 					SendCmdMsgToSingleCamera(cmd_msg, 0.01);
 
 					if (aux_configs.Aux_CamTrigEna[0] > 0)
-					{ // ������̨��Ҫ�ȴ�trig���Ŵ���
+					{ // 数字云台需要等待trig引脚触发
 						camPhotoAsyncStep = 20;
 					}
 					else
-					{ // ����������̨�ȴ�ָ�������
+					{ // 进入数字云台等待指令反馈步骤
 						camPhotoAsyncStep = 30;
 					}
 				}
@@ -561,7 +561,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 				}
 			}
 			else
-			{ // ������Ŵ������
+			{ // 相机引脚触发完成
 				camPhotoAsyncStep = 10;
 			}
 		}
@@ -571,12 +571,12 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 
 	case 10:
-	{ // ������Ŵ������
-		// ׼��ʧЧ�������
+	{ // 相机引脚触发完成
+		// 准备失效相机引脚
 
 		if (camPhotoAsyncT > aux_configs.Aux_CamShTime[0])
 		{
-			// ʧЧ���PWM
+			// 失效相机PWM
 			uint8_t MainMotorCount = get_MainMotorCount();
 			for (uint8_t i = MainMotorCount; i < PWMChannelsCount; ++i)
 			{
@@ -591,7 +591,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 
 			mavlink_message_t msg_sd;
 			for (uint8_t i = 0; i < MAVLINK_COMM_NUM_BUFFERS; ++i)
-			{ // �������ж˿�
+			{ // 遍历所有端口
 				if (mavlink_lock_chan(i, 2 / configTICK_RATE_HZ))
 				{
 					mavlink_msg_camera_status_pack_chan(
@@ -622,11 +622,11 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 			}
 
 			if (aux_configs.Aux_CamTrigEna[0])
-			{ // �ȴ������ѥ
+			{ // 等待相机热靴
 				camPhotoAsyncStep = 20;
 			}
 			else
-			{ // �����ѥû��ʹ�������̼�¼POS
+			{ // 如果热靴没有使能则立刻记录POS
 				SD_Pos_Record();
 				camPhotoAsyncStep = 11;
 				camPhotoAsyncT = 0;
@@ -637,7 +637,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 		break;
 	}
 	case 11:
-	{ // ��ʱ�ȴ�shʱ��
+	{ // 延时等待sh时间
 		if (camPhotoAsyncT > aux_configs.Aux_CamShTime[0])
 		{
 			resetCamPhotoAsyncStep;
@@ -647,7 +647,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 
 	case 20:
-	{ // �ȴ���ѥ����
+	{ // 等待热靴触发
 		if (camPhotoAsyncT > aux_configs.Aux_CamShTime[0] && (lastCamPhotoAsyncPhotoIndex != PhotoIndex || camPhotoAsyncT > 1.5))
 		{
 			resetCamPhotoAsyncStep;
@@ -656,7 +656,7 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 		break;
 	}
 	case 30:
-	{ // ������̨�ȴ�����
+	{ // 数字云台等待触发
 		CmdMsg msg;
 		bool msg_rd = ReceiveCmdMsgFromTask(&msg, CAMERA_FEEDBACK_QUEUE_ID, 0);
 		if (msg_rd)
@@ -669,9 +669,9 @@ static void AuxCamTakePhotoAsyncServer(float h, const AuxFuncsConfig &aux_config
 	}
 	}
 }
-/*���չ���*/
+/*拍照功能*/
 
-/*��������*/
+/*喷洒功能*/
 static float TankRMPercent = 100;
 float getTankRMPercent() { return TankRMPercent; }
 
@@ -723,7 +723,7 @@ bool setPump1bySpeed(float sp)
 	}
 	return chCount != 0;
 }
-/*��������*/
+/*喷洒功能*/
 
 bool setAuxPWM(float PWMus, uint8_t ind)
 {
@@ -748,7 +748,7 @@ void init_process_AuxFuncs()
 	//	Receiver rc;
 	//	if( getReceiver(&rc) )
 	//	{
-	//		//��λ����֮ǰͨ��
+	//		//复位保存之前通道
 	//		for( uint8_t i = 0; i < rc.raw_available_channels; ++i )
 	//			last_Channel_values[i] = rc.raw_data[i];
 	//		for( uint8_t i = rc.raw_available_channels; i < 16; ++i )
@@ -756,11 +756,11 @@ void init_process_AuxFuncs()
 	//	}
 	//	else
 	//	{
-	// ��λ����֮ǰͨ��
+	// 复位保存之前通道
 	for (uint8_t i = 0; i < 16; ++i)
 		last_Channel_values[i] = -200;
 	//	}
-	// ��λ�˶��Զ����Ʊ�־
+	// 复位运动自动控制标志
 	for (uint8_t i = 0; i < 16; ++i)
 	{
 		channelTemp1[i] = 0;
@@ -784,12 +784,12 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		float aux_param1 = ((float *)&aux_configs.Aux1Param1)[i * 2];
 		float aux_param2 = ((float *)&aux_configs.Aux1Param2)[i * 2];
 		if (aux_cfg == 0)
-		{ // �޹���(��ͨ��ָ�����PWM���)
+		{ // 无功能(可通过指令控制PWM输出)
 			if (GimbalCtrl_LockedAtt[i] < 100000)
 				Aux_PWM_Out((GimbalCtrl_LockedAtt[i] - 1000) * 0.1, i);
 		}
 		if (aux_cfg >= 1 && aux_cfg <= 16)
-		{ // ӳ��ң����ͨ��
+		{ // 映射遥控器通道
 			bool stLocked = false;
 			uint8_t stLock_chan = aux_configs.stLockParam[0] >> 24;
 			if (stLock_chan)
@@ -803,7 +803,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 
 			if (stLocked)
-			{ // ���������
+			{ // 舵机已锁定
 				if (aux_configs.auxCfg[0] & AUX_CFG_STLOCK_FORCEVALUE_BIT)
 				{
 					uint32_t value = aux_configs.stLockParam[0] & 0xff;
@@ -818,8 +818,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				if (rc->connected && rc->raw_available_channels > ref_chan)
 				{
 					if (fabs(GimbalCtrl_LockedAtt[i]) < 100000 && last_Channel_values[i] > -100)
-					{ // Aux�Զ�����
-						// ͨ���仯������ֵ�ŵ���Aux
+					{ // Aux自动控制
+						// 通道变化大于阈值才调整Aux
 						if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 						{
 							Aux_PWM_Out((rc->raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
@@ -828,7 +828,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 						}
 					}
 					else
-					{ // Aux�ֶ�����
+					{ // Aux手动控制
 						Aux_PWM_Out((rc->raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
 						last_Channel_values[i] = rc->raw_data[ref_chan];
 					}
@@ -838,7 +838,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 		else if (aux_cfg >= 501 && aux_cfg <= 516)
-		{ // ӳ��ң����ͨ������������
+		{ // 映射遥控器通道（开关量）
 			uint8_t ref_chan = aux_cfg - 501;
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
@@ -859,20 +859,20 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 		if (aux_cfg >= 525 && aux_cfg <= 548)
-		{ // ����ˮ��
+		{ // 控制水泵
 			double max = (aux_configs.Aux_Pump1Max[0] - 1000) * 0.1;
 			double min = (aux_configs.Aux_Pump1Min[0] - 1000) * 0.1;
 			double st = (aux_configs.Aux_Pump1St[0] - 1000) * 0.1;
 			double scale = (max - st) / 100.0;
 			if (GimbalCtrl_LockedAtt[i] < 200)
-			{ // �Զ�����ˮ��
+			{ // 自动控制水泵
 				if (GimbalCtrl_LockedAtt[i] > -20 && GimbalCtrl_LockedAtt[i] < 120)
 				{
 					float out = constrain(GimbalCtrl_LockedAtt[i], 0.0f, 100.0f);
 					Aux_PWM_Out(out * scale + st, i);
 				}
 				else
-				{ // �ر�ˮ��
+				{ // 关闭水泵
 					Aux_PWM_Out(min, i);
 				}
 			}
@@ -881,7 +881,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ˮ���ֶ�����
+				{ // 水泵手动控制
 					float out = (rc->raw_data[ref_chan] - 50.0) * aux_param1 + aux_param2;
 					out = constrain(out, 0.0f, 100.0f);
 					float deadZone = 15;
@@ -892,17 +892,17 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң���ź�
+			{ // 无遥控信号
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���ź�
-					// �ر�ˮ��
+				{ // 非自动控制且无遥控信号
+					// 关闭水泵
 					Aux_PWM_Out(min, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 25 && aux_cfg <= 48)
-		{ // ��ң������Ӧͨ������������Ŵ���(raw_data)
+		{ // 用遥控器对应通道进行相机快门触发(raw_data)
 			if (xSemaphoreTakeRecursive(CamMutex, 0))
 			{
 				if (camPhotoAsyncStep == 0)
@@ -913,7 +913,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 						if (last_Channel_values[i] > -100)
 						{
 							if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 15)
-							{ // �������
+							{ // 触发相机
 								if (last_Channel_values[i] > -100)
 								{
 									AuxCamTakePhoto();
@@ -924,13 +924,13 @@ void process_AuxFuncs(const Receiver *rc, double h)
 								Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						}
 						else
-						{ // ��ͨ�����ݲ�����
+						{ // 旧通道数据不可用
 							Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 							last_Channel_values[i] = rc->raw_data[ref_chan];
 						}
 					}
 					else
-					{ // ��ң����
+					{ // 无遥控器
 						Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						last_Channel_values[i] = -200;
 					}
@@ -939,7 +939,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 		else if (aux_cfg >= 49 && aux_cfg <= 72)
-		{ // ��ң������Ӧͨ��������ˢ��̨��������(raw_data)
+		{ // 用遥控器对应通道进行无刷云台俯仰控制(raw_data)
 			double angle90 = (aux_configs.Aux_BsYTPit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_BsYTPit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -950,8 +950,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ��̨�Զ�����
-					// ͨ���仯������ֵ�ŵ�����̨
+				{ // 云台自动控制
+					// 通道变化大于阈值才调整云台
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -962,7 +962,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ��̨�ֶ�����
+				{ // 云台手动控制
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
@@ -970,18 +970,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң���ź�
+			{ // 无遥控信号
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���ź�
-					// ����0�Ƕ�
+				{ // 非自动控制且无遥控信号
+					// 锁定0角度
 					float angle = 0;
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 73 && aux_cfg <= 96)
-		{ // ��ң������Ӧͨ�����ж����̨��������(raw_data)
+		{ // 用遥控器对应通道进行舵机云台俯仰控制(raw_data)
 			double angle90 = (aux_configs.Aux_StYTPit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_StYTPit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -995,8 +995,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ��̨�Զ�����
-					// ͨ���仯������ֵ�ŵ�����̨
+				{ // 云台自动控制
+					// 通道变化大于阈值才调整云台
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -1008,7 +1008,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ��̨�ֶ�����
+				{ // 云台手动控制
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle -= pitch;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
@@ -1017,18 +1017,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң���ź�
+			{ // 无遥控信号
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���ź�
-					// ����0�Ƕ�
+				{ // 非自动控制且无遥控信号
+					// 锁定0角度
 					float angle = 0;
 					Aux_PWM_Out((angle - pitch - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 273 && aux_cfg <= 296)
-		{ // ��ң������Ӧͨ�����ж����̨2��������(raw_data)
+		{ // 用遥控器对应通道进行舵机云台2俯仰控制(raw_data)
 			double angle90 = (aux_configs.Aux_StYT2Pit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_StYT2Pit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -1042,8 +1042,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ��̨�Զ�����
-					// ͨ���仯������ֵ�ŵ�����̨
+				{ // 云台自动控制
+					// 通道变化大于阈值才调整云台
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -1055,7 +1055,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ��̨�ֶ�����
+				{ // 云台手动控制
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle -= pitch;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
@@ -1064,18 +1064,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң���ź�
+			{ // 无遥控信号
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���ź�
-					// ����0�Ƕ�
+				{ // 非自动控制且无遥控信号
+					// 锁定0角度
 					float angle = 0;
 					Aux_PWM_Out((angle - pitch - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 97 && aux_cfg <= 120)
-		{ // ��ң������Ӧͨ�����ж����̨�������(raw_data)
+		{ // 用遥控器对应通道进行舵机云台横滚控制(raw_data)
 			double angleN45 = (aux_configs.Aux_StYTRolN45[0] - 1000) * 0.1;
 			double angleP45 = (aux_configs.Aux_StYTRolP45[0] - 1000) * 0.1;
 			double angle0 = (angleN45 + angleP45) / 2;
@@ -1090,8 +1090,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (rc->connected && rc->raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ��̨�Զ�����
-					// ͨ���仯������ֵ�ŵ�����̨
+				{ // 云台自动控制
+					// 通道变化大于阈值才调整云台
 					if (fabs(rc->raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (rc->raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
@@ -1103,7 +1103,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ��̨�ֶ�����
+				{ // 云台手动控制
 					float angle = (rc->raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
 					angle -= roll;
 					angle = constrain(angle, aux_configs.Aux_YTRollMax[0]);
@@ -1112,20 +1112,20 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң�����ź�
+			{ // 无遥控器信号
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���ź�
-					// ����0�Ƕ�
+				{ // 非自动控制且无遥控信号
+					// 锁定0角度
 					float angle = 0;
 					Aux_PWM_Out((angle - roll - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 121 && aux_cfg <= 137)
-		{ // ������̨���ƣ����߳��д���������ɾ��
+		{ // 数字云台控制，在线程中处理，请勿删除
 		}
 		else if (aux_cfg >= 173 && aux_cfg <= 196)
-		{ // ��ң������Ӧͨ�����ж����̨������������(raw_data)
+		{ // 用遥控器对应通道进行舵机云台俯仰往复控制(raw_data)
 			double angle90 = (aux_configs.Aux_StYTPit90[0] - 1000) * 0.1;
 			double angle0 = (aux_configs.Aux_StYTPit0[0] - 1000) * 0.1;
 			double scale = (angle90 - angle0) / 90.0;
@@ -1159,7 +1159,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			Aux_PWM_Out((*currentAngle) * scale + angle0, i);
 		}
 		else if (aux_cfg >= 197 && aux_cfg <= 220)
-		{ // ��ң������Ӧͨ�����ж����̨�����������(raw_data)
+		{ // 用遥控器对应通道进行舵机云台横滚往复控制(raw_data)
 			double angleN45 = (aux_configs.Aux_StYTRolN45[0] - 1000) * 0.1;
 			double angleP45 = (aux_configs.Aux_StYTRolP45[0] - 1000) * 0.1;
 			double angle0 = (angleN45 + angleP45) / 2;
@@ -1196,20 +1196,20 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		}
 
 		else if (aux_cfg == 950)
-		{ // ��ҩ����
+		{ // 断药开关
 			bool chanValue;
 			Aux_ChannelRead(i, &chanValue);
 			if (aux_param1 < 0)
 				chanValue = !chanValue;
 			if (chanValue && last_Channel_values[i] >= 0)
-			{ // ��ҩ���ش���
+			{ // 断药开关触发
 				if (last_Channel_values[i] > 50)
 					TankRMPercent = -20;
 				else
 					last_Channel_values[i] += 1;
 			}
 			else if (chanValue == false && last_Channel_values[i] <= 0)
-			{ // ��ҩ����δ����
+			{ // 断药开关未触发
 				if (last_Channel_values[i] < -50)
 				{
 					if (TankRMPercent <= 0)
@@ -1223,7 +1223,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		}
 
 		else if (aux_cfg >= 1001 && aux_cfg <= 1016)
-		{ // ӳ������ҡ��ͨ��
+		{ // 映射虚拟摇杆通道
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1233,8 +1233,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 100000 && last_Channel_values[i] > -100)
-				{ // Aux�Զ�����
-					// ͨ���仯������ֵ�ŵ���Aux
+				{ // Aux自动控制
+					// 通道变化大于阈值才调整Aux
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						Aux_PWM_Out((jrc.raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
@@ -1243,7 +1243,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // Aux�ֶ�����
+				{ // Aux手动控制
 					Aux_PWM_Out((jrc.raw_data[ref_chan] - 50.0) * aux_param1 + 50 + aux_param2 * 0.1, i);
 					last_Channel_values[i] = jrc.raw_data[ref_chan];
 				}
@@ -1252,7 +1252,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				last_Channel_values[i] = -200;
 		}
 		else if (aux_cfg >= 1025 && aux_cfg <= 1048)
-		{ // ������ҡ�˶�Ӧͨ������������Ŵ���(raw_data)
+		{ // 用虚拟摇杆对应通道进行相机快门触发(raw_data)
 			if (xSemaphoreTakeRecursive(CamMutex, 0))
 			{
 				if (camPhotoAsyncStep == 0)
@@ -1266,7 +1266,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 						if (last_Channel_values[i] > -100)
 						{
 							if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 15)
-							{ // �������
+							{ // 触发相机
 								if (last_Channel_values[i] > -100)
 								{
 									AuxCamTakePhoto();
@@ -1277,13 +1277,13 @@ void process_AuxFuncs(const Receiver *rc, double h)
 								Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						}
 						else
-						{ // ��ͨ�����ݲ�����
+						{ // 旧通道数据不可用
 							Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 							last_Channel_values[i] = jrc.raw_data[ref_chan];
 						}
 					}
 					else
-					{ // ��ң����
+					{ // 无遥控器
 						Aux_PWM_Out(aux_configs.Aux_CamOffPwm[0] * 0.1 - 100, i);
 						last_Channel_values[i] = -200;
 					}
@@ -1292,7 +1292,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 		else if (aux_cfg >= 1049 && aux_cfg <= 1072)
-		{ // ������ҡ�˶�Ӧͨ��������ˢ��̨��������(raw_data)
+		{ // 用虚拟摇杆对应通道进行无刷云台俯仰控制(raw_data)
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1306,8 +1306,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ��̨�Զ�����
-					// ͨ���仯������ֵ�ŵ�����̨
+				{ // 云台自动控制
+					// 通道变化大于阈值才调整云台
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -1318,7 +1318,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ��̨�ֶ�����
+				{ // 云台手动控制
 					float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
@@ -1326,18 +1326,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң���ź�
+			{ // 无遥控信号
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���Ņ�
-					// ����0�Ƕ�
+				{ // 非自动控制且无遥控信叿
+					// 锁定0角度
 					float angle = 0;
 					Aux_PWM_Out((angle - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 1073 && aux_cfg <= 1096)
-		{ // ������ҡ�˶�Ӧͨ�����ж����̨��������(raw_data)
+		{ // 用虚拟摇杆对应通道进行舵机云台俯仰控制(raw_data)
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1354,8 +1354,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ��̨�Զ�����
-					// ͨ���仯������ֵ�ŵ�����̨
+				{ // 云台自动控制
+					// 通道变化大于阈值才调整云台
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
@@ -1367,7 +1367,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ��̨�ֶ�����
+				{ // 云台手动控制
 					float angle = (jrc.raw_data[ref_chan] - 50.0) * (60.0 / 50.0) * aux_param1 + 45 + aux_param2;
 					angle -= pitch;
 					angle = constrain(angle, aux_configs.Aux_YTPitMin[0], aux_configs.Aux_YTPitMax[0]);
@@ -1376,18 +1376,18 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң���ź�
+			{ // 无遥控信号
 				last_Channel_values[i] = -200;
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���Ņ�
-					// ����0�Ƕ�
+				{ // 非自动控制且无遥控信叿
+					// 锁定0角度
 					float angle = 0;
 					Aux_PWM_Out((angle - pitch - 0) * scale + angle0, i);
 				}
 			}
 		}
 		else if (aux_cfg >= 1097 && aux_cfg <= 1120)
-		{ // ������ҡ�˶�Ӧͨ�����ж����̨�������(raw_data)
+		{ // 用虚拟摇杆对应通道进行舵机云台横滚控制(raw_data)
 			Receiver jrc;
 			getJoyStick(&jrc, 0);
 
@@ -1405,8 +1405,8 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			if (jrc.connected && jrc.raw_available_channels > ref_chan)
 			{
 				if (fabs(GimbalCtrl_LockedAtt[i]) < 200 && last_Channel_values[i] > -100)
-				{ // ��̨�Զ�����
-					// ͨ���仯������ֵ�ŵ�����̨
+				{ // 云台自动控制
+					// 通道变化大于阈值才调整云台
 					if (fabs(jrc.raw_data[ref_chan] - last_Channel_values[i]) > 10)
 					{
 						float angle = (jrc.raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
@@ -1418,7 +1418,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 					}
 				}
 				else
-				{ // ��̨�ֶ�����
+				{ // 云台手动控制
 					float angle = (jrc.raw_data[ref_chan] - 50.0) * (45.0 / 50.0) * aux_param1 + aux_param2;
 					angle -= roll;
 					angle = constrain(angle, aux_configs.Aux_YTRollMax[0]);
@@ -1427,10 +1427,10 @@ void process_AuxFuncs(const Receiver *rc, double h)
 				}
 			}
 			else
-			{ // ��ң�����ź�
+			{ // 无遥控器信号
 				if (GimbalCtrl_LockedAtt[i] > 200)
-				{ // ���Զ���������ң���Ņ�
-					// ����0�Ƕ�
+				{ // 非自动控制且无遥控信叿
+					// 锁定0角度
 					float angle = 0;
 					Aux_PWM_Out((angle - roll - 0) * scale + angle0, i);
 				}
@@ -1438,50 +1438,50 @@ void process_AuxFuncs(const Receiver *rc, double h)
 		}
 	}
 
-	//	/*������̨�ӿ�*/
+	//	/*数字云台接口*/
 	//		for( uint8_t i = 0; i < 8; ++i )
-	//		{	//��� ���� ƫ�� ��??
-	//			//ģʽ �۽� ����¼�� ��λ
+	//		{	//横滚 俯仰 偏航 变??
+	//			//模式 聚焦 拍照录像 归位
 	//			uint16_t aux_cfg = ((uint16_t*)&aux_configs.DgYTRFunc)[i*4];
 	//			float aux_param1 = ((float*)&aux_configs.DgYTRParam1)[i*2];
 	//			float aux_param2 = ((float*)&aux_configs.DgYTRParam2)[i*2];
 	//
 	//			if( aux_cfg>=1 && aux_cfg<=16 )
-	//			{	//ң����ͨ�����ƽǶ�
+	//			{	//遥控器通道控制角度
 	//				if( rc->connected )
 	//				{
 	//					uint8_t ref_chan = aux_cfg - 1;
 	//					if( rc->raw_available_channels > ref_chan )
 	//					{
 	//						float value;
-	//						if( i == DgYTZoom )	//����ͨ�����⴦��
+	//						if( i == DgYTZoom )	//缩放通道特殊处理
 	//							value = rc->raw_data[ref_chan]*0.3*aux_param1+aux_param2*0.1;
 	//						else
 	//							value = (rc->raw_data[ref_chan]-50.0)*aux_param1+aux_param2*0.1;
 	//
 	//						set_DgYTCtrl( i,
-	//							0, //0-�Ƕ�ģʽ 1-���ٶ�ģʽ
+	//							0, //0-角度模式 1-角速度模式
 	//							value,
 	//							0.1 );
 	//					}
 	//				}
 	//			}
 	//			else if( aux_cfg>=25 && aux_cfg<=48 )
-	//			{	//ң����ͨ�����ƽǶ�
+	//			{	//遥控器通道控制角度
 	//				if( rc->connected )
 	//				{
 	//					uint8_t ref_chan = aux_cfg - 25;
 	//					if( rc->raw_available_channels > ref_chan )
 	//					{
 	//						set_DgYTCtrl( i,
-	//							1, //0-�Ƕ�ģʽ 1-���ٶ�ģʽ
+	//							1, //0-角度模式 1-角速度模式
 	//							(rc->raw_data[ref_chan]-50.0)*aux_param1+aux_param2*0.1,
 	//							0.1 );
 	//					}
 	//				}
 	//			}
 	//		}
-	//	/*������̨�ӿ�*/
+	//	/*数字云台接口*/
 }
 
 bool AuxGimbalSetAngle(double angle)
@@ -1495,17 +1495,17 @@ bool AuxGimbalSetAngle(double angle)
 	{
 		uint8_t aux_cfg = ((uint8_t *)&aux_configs)[i * 8];
 		if (aux_cfg >= 49 && aux_cfg <= 72)
-		{ // ��ˢ��̨����??
+		{ // 无刷云台俯仰??
 			angle = constrain(angle, (double)aux_configs.Aux_YTPitMin[0], (double)aux_configs.Aux_YTPitMax[0]);
 			GimbalCtrl_LockedAtt[i] = angle;
 		}
 		else if (aux_cfg >= 73 && aux_cfg <= 96)
-		{ // ��ˢ��̨����??
+		{ // 无刷云台俯仰??
 			angle = constrain(angle, (double)aux_configs.Aux_YTPitMin[0], (double)aux_configs.Aux_YTPitMax[0]);
 			GimbalCtrl_LockedAtt[i] = angle;
 		}
 		else if (aux_cfg >= 97 && aux_cfg <= 120)
-		{ // ��ˢ��̨����??
+		{ // 无刷云台俯仰??
 			angle = constrain(angle, (double)aux_configs.Aux_YTRollMax[0]);
 			GimbalCtrl_LockedAtt[i] = angle;
 		}
@@ -1515,10 +1515,10 @@ bool AuxGimbalSetAngle(double angle)
 
 void init_AuxFuncs()
 {
-	// ע����Ϣ����
+	// 注册消息队列
 	TaskQueueRegister(CAMERA_FEEDBACK_QUEUE_ID, 30);
 
-	// ע��ͨ�Ų���
+	// 注册通信参数
 	AuxFuncsConfig initial_cfg;
 	initial_cfg.Aux1Func[0] = 0;
 	initial_cfg.Aux2Func[0] = 0;
@@ -1535,7 +1535,7 @@ void init_AuxFuncs()
 	initial_cfg.Aux13Func[0] = 0;
 	initial_cfg.Aux14Func[0] = 0;
 
-	/* ң��ͨ��1-16��Ӧ��������̨���� */
+	/* 遥控通道1-16对应的数字云台功能 */
 	initial_cfg.RcYT1Func[0] = 0;
 	initial_cfg.RcYT2Func[0] = 0;
 	initial_cfg.RcYT3Func[0] = 0;
@@ -1568,7 +1568,7 @@ void init_AuxFuncs()
 	initial_cfg.Aux13Param1[0] = 1;
 	initial_cfg.Aux14Param1[0] = 1;
 
-	/* ң��ͨ��1-16��Ӧ��������̨����1 */
+	/* 遥控通道1-16对应的数字云台参数1 */
 	initial_cfg.RcYT1Param1[0] = 1;
 	initial_cfg.RcYT2Param1[0] = 1;
 	initial_cfg.RcYT3Param1[0] = 1;
@@ -1601,7 +1601,7 @@ void init_AuxFuncs()
 	initial_cfg.Aux13Param2[0] = 0;
 	initial_cfg.Aux14Param2[0] = 0;
 
-	/* ң��ͨ��1-16��Ӧ��������̨����2 */
+	/* 遥控通道1-16对应的数字云台参数2 */
 	initial_cfg.RcYT1Param2[0] = 1;
 	initial_cfg.RcYT2Param2[0] = 1;
 	initial_cfg.RcYT3Param2[0] = 1;
@@ -1858,11 +1858,11 @@ void init_AuxFuncs()
 		"Aux_cfg",
 		"Aux_stLockParam",
 
-		"Aux_YTSurveyPic", // ������̨�Ƿ����ڲ���������������
-		"Aux_CamOnPwm",	   // ���տ�
-		"Aux_CamOffPwm",   // ���չ�
-		"Aux_CamShTime",   // ���ճ���ʱ��
-		"Aux_CamTrigEna",  // ��ѥ����ʹ��
+		"Aux_YTSurveyPic", // 数字云台是否需在测绘任务过程中拍照
+		"Aux_CamOnPwm",	   // 拍照开
+		"Aux_CamOffPwm",   // 拍照关
+		"Aux_CamShTime",   // 拍照持续时间
+		"Aux_CamTrigEna",  // 热靴触发使能
 		"Aux_BsYTPit0",
 		"Aux_BsYTPit90",
 		"Aux_StYTPit0",
