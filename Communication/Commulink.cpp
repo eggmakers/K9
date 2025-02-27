@@ -1861,6 +1861,31 @@ void init_Commulink()
 	};
 	ParamGroupRegister("I2C", 3, sizeof(initial_I2CConfigcfg) / 8, I2Cparam_types, I2Cparam_names, (uint64_t *)&initial_I2CConfigcfg);
 
+	// 注册喷洒/撒播模式参数
+	MAV_PARAM_TYPE custom_params_types[] = {
+		MAV_PARAM_TYPE_UINT8,
+		MAV_PARAM_TYPE_REAL32,
+	};
+	SName custom_params_names[] = {
+		"SprayMode",
+		"ReturnWeight",
+	};
+	uint64_t initial_values[2];
+	initial_values[0] = 0;		 // 默认关闭喷洒模式
+	float default_weight = 5.0f; // 默认返航重量5kg
+	uint32_t weight_bytes;
+	memcpy(&weight_bytes, &default_weight, sizeof(float));
+	initial_values[1] = (uint64_t)weight_bytes;
+
+	ParamGroupRegister(
+		"SprayConfig",		 // 参数组名称
+		1,					 // 参数版本号
+		2,					 // 参数数量
+		custom_params_types, // 参数类型数组
+		custom_params_names, // 参数名称数组
+		initial_values		 // 初始值
+	);
+
 	// xTaskCreate( Commulink_Server, "Commulink", 3000, NULL, SysPriority_UserTask, NULL);
 	xTaskCreateStatic(Commulink_Server, "Commulink", Commulink_StackSize, NULL, SysPriority_UserTask, Commulink_Stack, &Commulink_TaskBuffer);
 }

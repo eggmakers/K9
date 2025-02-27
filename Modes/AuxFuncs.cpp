@@ -11,6 +11,12 @@
 #include "semphr.h"
 #include "usb_composite.h"
 #include "MavlinkCMDProcess.hpp"
+#include "drv_ADM001.hpp"
+
+// 喷洒或播撒模式
+uint8_t spray_mode;
+float return_weight;
+uint64_t weight_value;
 
 // 保存之前通道值
 static double last_Channel_values[16];
@@ -775,6 +781,10 @@ void process_AuxFuncs(const Receiver *rc, double h)
 	AuxFuncsConfig aux_configs;
 	ReadParamGroup("AuxCfg", (uint64_t *)&aux_configs, 0);
 
+	ReadParam("SprayMode", NULL, NULL, (uint64_t *)&spray_mode, NULL);
+	ReadParam("ReturnWeight", NULL, NULL, &weight_value, NULL);
+	memcpy(&return_weight, &weight_value, sizeof(float));
+
 	AuxCamTakePhotoAsyncServer(h, aux_configs);
 
 	uint8_t MainMotorCount = get_MainMotorCount();
@@ -1194,8 +1204,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 
 			Aux_PWM_Out((*currentAngle) * scale + angle0, i);
 		}
-
-		else if (aux_cfg == 950)
+		else if (aux_cfg == 950 && !spray_mode)
 		{ // 断药开关
 			bool chanValue;
 			Aux_ChannelRead(i, &chanValue);
@@ -1221,7 +1230,10 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			else
 				last_Channel_values[i] = 0;
 		}
-
+		else if (spray_mode)
+		{
+			TankRMPercent = (weight_kg > return_weight) ? 100 : -20;
+		}
 		else if (aux_cfg >= 1001 && aux_cfg <= 1016)
 		{ // 映射虚拟摇杆通道
 			Receiver jrc;
@@ -1437,7 +1449,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 			}
 		}
 	}
-
+#if 0
 	//	/*数字云台接口*/
 	//		for( uint8_t i = 0; i < 8; ++i )
 	//		{	//横滚 俯仰 偏航 变??
@@ -1482,6 +1494,7 @@ void process_AuxFuncs(const Receiver *rc, double h)
 	//			}
 	//		}
 	//	/*数字云台接口*/
+#endif
 }
 
 bool AuxGimbalSetAngle(double angle)
